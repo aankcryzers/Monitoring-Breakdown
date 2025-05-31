@@ -702,7 +702,7 @@ function resetForm() {
 
 // --- Add or update breakdown (hanya menambah ke Google Sheets via Apps Script) ---
 function addBreakdownEntryToSheet(entry) {
-  fetch(WEBAPP_URL, {
+  fetch("https://script.google.com/macros/s/AKfycbxHRIONJ-eOz-e7rFyvAlYgTcHrCLuEzaER0G3R1sjiU7AKWN1t9ElZcuUzay43VTA/exec", {
     method: 'POST',
     body: JSON.stringify(entry),
     headers: {
