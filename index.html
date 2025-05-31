@@ -7,7 +7,6 @@
   <!-- SheetJS for Excel Export -->
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
   <style>
-    /* Reset & basic */
     * { box-sizing: border-box; }
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -99,7 +98,6 @@
     .breakdown-section {
       margin-top: 1rem;
     }
-    /* Table Styling */
     .table-container {
       background: #f8fafb;
       border-radius: 11px;
@@ -144,8 +142,6 @@
       color: #888;
       background: #fcfcfc;
     }
-
-    /* Custom item row & container styles */
     .spare-parts-container, .pic-container {
       border: 1px solid #cce5e0;
       border-radius: 7px;
@@ -382,10 +378,12 @@
 </main>
 
 <script>
-// === CONFIGURE THIS SECTION ===
+// --- Konfigurasi ---
 const GOOGLE_API_KEY = "AIzaSyBSR4tOOHllYLG3hf5AAtmXiyeMRPsUtMI";
 const GOOGLE_SHEET_ID = "10R3Wv9iDX0TxuflsCzcAvQlmKAPDY5UqAbw1B5gQfnY";
 const UNIT_CODE_RANGE = "UnitList!A2:A";
+const BREAKDOWN_DATA_RANGE = "Breakdown!A2:M"; // Sesuaikan dgn range sheet breakdown
+const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbw82dghwrZPXi0cKDtWJ6eUwh9ybOdyKkeImWZoOSPxzTkjfIJtNu1a-rR-bZMTPReh5A/exec'; // Ganti dengan URL Web App Google Apps Script Anda
 
 const picDatabase = ['Nando', 'Fajar', 'Rizal', 'Arief'];
 const sparePartsDatabase = [
@@ -398,7 +396,6 @@ const sparePartsDatabase = [
   {name: 'Hydraulic Pump'}
 ];
 const unitOptions = ['pcs','set','unit'];
-
 const subcomponentsMap = {
   'Engine': ['Fuel Injector', 'Turbocharger', 'Oil Pump'],
   'Hydraulic System': ['Pump', 'Cylinder', 'Valve'],
@@ -411,7 +408,7 @@ const subcomponentsMap = {
   'Other': ['Lainnya']
 };
 
-// === Populate Unit Code from Google Sheets ===
+// --- Populate Unit Code from Google Sheets ---
 async function populateUnitCodesFromSheet() {
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${GOOGLE_SHEET_ID}/values/${encodeURIComponent(UNIT_CODE_RANGE)}?key=${GOOGLE_API_KEY}`;
   try {
@@ -436,7 +433,7 @@ async function populateUnitCodesFromSheet() {
 }
 populateUnitCodesFromSheet();
 
-// === PIC logic ===
+// --- PIC logic ---
 function createPicSelect(id) {
   const select = document.createElement('select');
   select.name = `picName_${id}`;
@@ -484,7 +481,7 @@ function addPicRow() {
 document.getElementById('addPicBtn').addEventListener('click', addPicRow);
 addPicRow();
 
-// === Spare Part logic ===
+// --- Spare Part logic ---
 function createUnitSelect(id) {
   const select = document.createElement('select');
   select.name = `sparePartUnit_${id}`;
@@ -559,7 +556,7 @@ function addSparePartRow() {
 document.getElementById('addSparePartBtn').addEventListener('click', addSparePartRow);
 addSparePartRow();
 
-// === Subcomponent dynamic ===
+// --- Subcomponent dynamic ---
 const componentSelect = document.getElementById('componentSelect');
 const subcomponentSelect = document.getElementById('subcomponentSelect');
 function updateSubcomponents() {
@@ -578,7 +575,7 @@ function updateSubcomponents() {
 componentSelect.addEventListener('change', updateSubcomponents);
 subcomponentSelect.disabled = true;
 
-// === Get form values helpers ===
+// --- Get form values helpers ---
 function getPicsFromForm() {
   const pics = [];
   const rows = document.getElementById('picContainer').querySelectorAll('.pic-item-row');
@@ -619,9 +616,43 @@ function clearSparePartsContainer() {
   addSparePartRow();
 }
 
-// === Form and Table State ===
+// --- Form and Table State ---
 let breakdownEntries = [];
 let editingIndex = -1;
+
+// --- Fetch Data Breakdown from Google Sheets ---
+async function fetchBreakdownEntriesFromSheet() {
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${GOOGLE_SHEET_ID}/values/${encodeURIComponent(BREAKDOWN_DATA_RANGE)}?key=${GOOGLE_API_KEY}`;
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+    if (data.values && data.values.length > 0) {
+      breakdownEntries = data.values.map(row => ({
+        woNumber: row[0] || '',
+        unitCode: row[1] || '',
+        date: row[2] || '',
+        breakdownTime: row[3] || '',
+        caseStatus: row[4] || '',
+        closeDate: row[5] || '',
+        closeTime: row[6] || '',
+        component: row[7] || '',
+        subcomponent: row[8] || '',
+        description: row[9] || '',
+        repairIssue: row[10] || '',
+        pics: row[11] ? row[11].split(',').map(s=>s.trim()) : [],
+        spareParts: row[12] ? JSON.parse(row[12]) : [],
+      }));
+    } else {
+      breakdownEntries = [];
+    }
+    renderBreakdownTable();
+  } catch (err) {
+    breakdownEntries = [];
+    renderBreakdownTable();
+    alert('Gagal mengambil data dari Google Sheets.');
+    console.error('Error fetching breakdown entries:', err);
+  }
+}
 
 // --- Populate form for editing ---
 function populateFormForEdit(entry) {
@@ -669,15 +700,29 @@ function resetForm() {
   editingIndex = -1;
 }
 
-// --- Add or update breakdown ---
-function addBreakdownEntry(entry) {
-  if (editingIndex >= 0) {
-    breakdownEntries[editingIndex] = entry;
-    editingIndex = -1;
-  } else {
-    breakdownEntries.push(entry);
-  }
-  renderBreakdownTable();
+// --- Add or update breakdown (hanya menambah ke Google Sheets via Apps Script) ---
+function addBreakdownEntryToSheet(entry) {
+  fetch(WEBAPP_URL, {
+    method: 'POST',
+    body: JSON.stringify(entry),
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  })
+  .then(res => res.json())
+  .then(response => {
+    if (response.result === 'success') {
+      alert('Data berhasil disimpan ke Google Sheets!');
+      fetchBreakdownEntriesFromSheet();
+      resetForm();
+    } else {
+      alert('Gagal menyimpan data!');
+    }
+  })
+  .catch(err => {
+    alert('Gagal menghubungi server Apps Script!');
+    console.error(err);
+  });
 }
 
 // --- Table render ---
@@ -737,17 +782,15 @@ document.getElementById('breakdown-form').addEventListener('submit', e => {
     return;
   }
 
-  let caseStatus = editingIndex >= 0 ? breakdownEntries[editingIndex].caseStatus : 'Open';
-  let closeDate = editingIndex >= 0 ? breakdownEntries[editingIndex].closeDate : undefined;
-  let closeTime = editingIndex >= 0 ? breakdownEntries[editingIndex].closeTime : undefined;
+  const caseStatus = 'Open';
+  const closeDate = '';
+  const closeTime = '';
 
   const newEntry = { woNumber, unitCode, date, breakdownTime, caseStatus, closeDate, closeTime, component, subcomponent, description, repairIssue, pics, spareParts };
-  addBreakdownEntry(newEntry);
-  resetForm();
-  alert(editingIndex >= 0 ? 'Data breakdown berhasil diupdate!' : 'Data breakdown berhasil ditambahkan!');
+  addBreakdownEntryToSheet(newEntry);
 });
 
-// --- Double-click row to edit ---
+// --- Double-click row to edit (optional, hanya untuk edit tampilan lokal) ---
 document.getElementById('breakdownTbody').addEventListener('dblclick', e => {
   const row = e.target.closest('tr.editable-row');
   if (row) {
@@ -763,36 +806,12 @@ document.getElementById('breakdownTbody').addEventListener('dblclick', e => {
 // --- Row action buttons (delete/close) ---
 document.getElementById('breakdownTbody').addEventListener('click', e => {
   if (e.target.classList.contains('delete-btn')) {
-    const index = parseInt(e.target.getAttribute('data-index'));
-    if (!isNaN(index)) {
-      if (confirm('Yakin ingin menghapus data breakdown ini?')) {
-        breakdownEntries.splice(index, 1);
-        renderBreakdownTable();
-        if (editingIndex === index) {
-          resetForm();
-        }
-      }
-    }
-  }
-  else if (e.target.classList.contains('close-case-btn')) {
-    const index = parseInt(e.target.getAttribute('data-index'));
-    if (!isNaN(index)) {
-      // Konfirmasi RFU
-      const isRFU = confirm('Apakah unit sudah RFU (Ready For Use)?');
-      if (!isRFU) return;
-      const now = new Date();
-      const pad = num => num.toString().padStart(2, '0');
-      const today = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
-      const time = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
-      breakdownEntries[index].caseStatus = "Closed";
-      breakdownEntries[index].closeDate = today;
-      breakdownEntries[index].closeTime = time;
-      renderBreakdownTable();
-    }
+    alert('Hapus data hanya bisa dilakukan pada Google Sheets langsung.');
+  } else if (e.target.classList.contains('close-case-btn')) {
+    alert('Close Case hanya bisa dilakukan pada Google Sheets langsung atau fitur update diaktifkan.');
   }
 });
 
-renderBreakdownTable();
 
 // --- EXPORT TO EXCEL (SheetJS) ---
 document.getElementById('exportExcelBtn').addEventListener('click', function () {
@@ -809,6 +828,10 @@ document.getElementById('exportExcelBtn').addEventListener('click', function () 
   const wb = XLSX.utils.table_to_book(tempTable, {sheet: "Daftar Breakdown"});
   XLSX.writeFile(wb, 'daftar_breakdown_unit.xlsx');
 });
+
+// --- Load data saat halaman dibuka ---
+fetchBreakdownEntriesFromSheet();
+
 </script>
 
 </body>
