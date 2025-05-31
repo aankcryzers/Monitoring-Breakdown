@@ -678,16 +678,23 @@ document.getElementById('breakdownTbody').addEventListener('click', e => {
     }
   }
   else if (e.target.classList.contains('close-case-btn')) {
-    const index = parseInt(e.target.getAttribute('data-index'));
-    if (!isNaN(index)) {
-      const now = new Date();
-      const pad = num => num.toString().padStart(2, '0');
-      const today = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
-      const time = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
-      breakdownEntries[index].caseStatus = "Closed";
-      breakdownEntries[index].closeDate = today;
-      breakdownEntries[index].closeTime = time;
-      renderBreakdownTable();
+  const index = parseInt(e.target.getAttribute('data-index'));
+  if (!isNaN(index)) {
+    // TAMBAHKAN KONFIRMASI RFU
+    const isRFU = confirm('Apakah unit sudah RFU (Ready For Use)?');
+    if (!isRFU) {
+      // Jika user klik "Batal", proses close tidak dijalankan
+      return;
+    }
+    // Lanjutkan proses close seperti biasa
+    const now = new Date();
+    const pad = num => num.toString().padStart(2, '0');
+    const today = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
+    const time = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+    breakdownEntries[index].caseStatus = "Closed";
+    breakdownEntries[index].closeDate = today;
+    breakdownEntries[index].closeTime = time;
+    renderBreakdownTable();
     }
   }
 });
