@@ -622,7 +622,7 @@ let editingIndex = -1;
 
 // --- Fetch Data Breakdown from Google Sheets ---
 async function fetchBreakdownEntriesFromSheet() {
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${GOOGLE_SHEET_ID}/values/${encodeURIComponent(BREAKDOWN_DATA_RANGE)}?key=${GOOGLE_API_KEY}`;
+  const url = "https://script.google.com/macros/s/AKfycbxHRIONJ-eOz-e7rFyvAlYgTcHrCLuEzaER0G3R1sjiU7AKWN1t9ElZcuUzay43VTA/exec";
   try {
     const response = await fetch(url);
     const data = await response.json();
