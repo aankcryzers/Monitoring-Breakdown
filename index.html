@@ -387,7 +387,7 @@ function incrementWO() {
 const SPREADSHEET_API = {
   units: 'https://raw.githubusercontent.com/aankcryzers/Monitoring-Breakdown/main/unit.json', // mock endpoint, ganti ke endpoint Anda
   komponen: 'https://raw.githubusercontent.com/aankcryzers/Monitoring-Breakdown/main/komponen.json',
-  subkomponen: 'https://raw.githubusercontent.com/aankcryzers/Monitoring-Breakdown/main/komponen.json',
+  subkomponen: 'https://raw.githubusercontent.com/aankcryzers/Monitoring-Breakdown/main/subkomponen.json',
   manpower: 'https://mocki.io/v1/0f9a3c12-plantmanpower',
   material: 'https://mocki.io/v1/4e924a14-plantmaterial'
 };
@@ -422,7 +422,7 @@ async function initDropdowns(){
 console.log(kArr); // Debug: pastikan array benar
 let kSel = document.getElementById("formKomponenSelect");
 kSel.innerHTML = `<option value="">--Pilih Komponen--</option>`;
-kArr.forEach(k=>kSel.innerHTML += `<option value="${k.komponen}">${k.name}</option>`);
+kArr.forEach(k=>kSel.innerHTML += `<option value="${k.name}">${k.name}</option>`);
   let sArr = await fetchDropdown(SPREADSHEET_API.komponen, [
     {komponen:"Engine", name:"Injector"}, {komponen:"Engine", name:"Radiator"}, {komponen:"Hydraulic", name:"Main Pump"}
   ]);
@@ -431,7 +431,7 @@ kArr.forEach(k=>kSel.innerHTML += `<option value="${k.komponen}">${k.name}</opti
     let subSel = document.getElementById("formSubkomponenSelect");
     subSel.innerHTML = `<option value="">--Pilih Sub Komponen--</option>`;
     sArr.filter(s=>s.komponen===val).forEach(s=>{
-      subSel.innerHTML+=`<option value="${s.komponen}">${s.name}</option>`;
+      subSel.innerHTML+=`<option value="${s.name}">${s.name}</option>`;
     });
   }
   let manArr = await fetchDropdown(SPREADSHEET_API.manpower, [
