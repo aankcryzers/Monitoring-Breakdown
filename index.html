@@ -421,7 +421,7 @@ async function initDropdowns(){
   ]);
   let kSel = document.getElementById("formKomponenSelect");
   kSel.innerHTML = `<option value="">--Pilih Komponen--</option>`;
-  kArr.forEach(k=>kSel.innerHTML += `<option value="${k.name}">${k.name}</option>`);
+  kArr.forEach(k=>kSel.innerHTML += `<option value="${k.komponen}">${k.name}</option>`);
 
   // PERBAIKAN: fetch subkomponen
   let sArr = await fetchDropdown(SPREADSHEET_API.subkomponen, [
