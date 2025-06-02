@@ -422,8 +422,8 @@ async function initDropdowns(){
 console.log(kArr); // Debug: pastikan array benar
 let kSel = document.getElementById("formKomponenSelect");
 kSel.innerHTML = `<option value="">--Pilih Komponen--</option>`;
-kArr.forEach(k=>kSel.innerHTML += `<option value="${k.name}">${k.name}</option>`);
-  let sArr = await fetchDropdown(SPREADSHEET_API.subkomponen, [
+kArr.forEach(k=>kSel.innerHTML += `<option value="${k.komponen}">${k.name}</option>`);
+  let sArr = await fetchDropdown(SPREADSHEET_API.komponen, [
     {komponen:"Engine", name:"Injector"}, {komponen:"Engine", name:"Radiator"}, {komponen:"Hydraulic", name:"Main Pump"}
   ]);
   kSel.onchange = function(){
