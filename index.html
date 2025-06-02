@@ -92,7 +92,6 @@
   <button class="sidebar-toggle-btn" id="sidebarToggleBtn"><i class="fa fa-angle-left"></i></button>
   <ul class="nav flex-column">
     <li><a href="#" class="nav-link active" id="menu-plant"><i class="fa fa-industry"></i> WO</a></li>
-    <!-- Tambah menu lain jika perlu -->
   </ul>
   <div class="nav-sep"></div>
   <div style="padding: 12px 18px; color:var(--muted); font-size:0.93em;">PT Sample Plant System</div>
@@ -326,7 +325,6 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
 <script>
-// ---- SIDEBAR & MENU ----
 const sidebar = document.getElementById("sidebar");
 document.getElementById("sidebarToggleBtn").onclick = function() {
   sidebar.classList.toggle("hide");
@@ -382,16 +380,13 @@ function incrementWO() {
   let counter = Number(localStorage.getItem(WO_KEY) || "1");
   localStorage.setItem(WO_KEY, counter + 1);
 }
-// ---- DROPDOWN FROM SPREADSHEET MOCK ----
-// Ganti url ini ke endpoint sheet API Anda!
 const SPREADSHEET_API = {
-  units: 'https://raw.githubusercontent.com/aankcryzers/Monitoring-Breakdown/main/unit.json', // mock endpoint, ganti ke endpoint Anda
+  units: 'https://raw.githubusercontent.com/aankcryzers/Monitoring-Breakdown/main/unit.json',
   komponen: 'https://raw.githubusercontent.com/aankcryzers/Monitoring-Breakdown/main/komponen.json',
   subkomponen: 'https://raw.githubusercontent.com/aankcryzers/Monitoring-Breakdown/main/subkomponen.json',
   manpower: 'https://mocki.io/v1/0f9a3c12-plantmanpower',
   material: 'https://mocki.io/v1/4e924a14-plantmaterial'
 };
-// Helper fetch for dropdown, fallback to dummy
 async function fetchDropdown(url, fallback) {
   try {
     const res = await fetch(url);
@@ -401,51 +396,50 @@ async function fetchDropdown(url, fallback) {
     return fallback;
   }
 }
-// INIT dropdown from spreadsheet
 async function initDropdowns(){
+  // UNIT
   let unitArr = await fetchDropdown(SPREADSHEET_API.units, [
     {unit:"BSS-75", type:"DUMP TRUCK"}, {unit:"EX7-43", type:"A2B"}, {unit:"LT-01", type:"SUPPORT"}
   ]);
   let unitSel = document.getElementById("formUnitSelect");
   unitSel.innerHTML = `<option value="">--Pilih Unit--</option>`;
-  console.log(unitArr);
-  unitArr.filter(u => u && u.unit_code).forEach(u => {
-  unitSel.innerHTML += `<option value="${u.unit}" data-type="${u.type}">${u.unit_code} (${u.type})</option>`;
+  unitArr.filter(u => u && u.unit).forEach(u => {
+    unitSel.innerHTML += `<option value="${u.unit}" data-type="${u.type}">${u.unit_code} (${u.type})</option>`;
   });
   unitSel.onchange = function(){
     let opt = unitSel.options[unitSel.selectedIndex];
     document.getElementById("formTypeSelect").value = opt.getAttribute("data-type") || "";
   };
-  // Ambil data Komponen
-let kArr = await fetchDropdown(SPREADSHEET_API.komponen, [
-  {name: "ENGINE"},
-  {name: "ELECTRICAL"}
-]);
-let kSel = document.getElementById("formKomponenSelect");
-kSel.innerHTML = `<option value="">--Pilih Komponen--</option>`;
-kArr.forEach(k => {
-  kSel.innerHTML += `<option value="${k.name}">${k.name}</option>`;
-});
-
-// Ambil data Subkomponen
-let sArr = await fetchDropdown(SPREADSHEET_API.subkomponen, [
-  {komponen: "ENGINE", name: "ENGINE AIR INDUCTION & EXHAUST SYSTEM"}
-]);
-
-// Relasi Komponen-Subkomponen
-kSel.onchange = function(){
-  let val = kSel.value;
-  let subSel = document.getElementById("formSubkomponenSelect");
-  subSel.innerHTML = `<option value="">--Pilih Sub Komponen--</option>`;
-  sArr.filter(s => s.komponen === val).forEach(s => {
-    subSel.innerHTML += `<option value="${s.name}">${s.name}</option>`;
+  // KOMPONEN
+  let kArr = await fetchDropdown(SPREADSHEET_API.komponen, [
+    {name: "ENGINE"},
+    {name: "ELECTRICAL"}
+  ]);
+  let kSel = document.getElementById("formKomponenSelect");
+  kSel.innerHTML = `<option value="">--Pilih Komponen--</option>`;
+  kArr.forEach(k => {
+    kSel.innerHTML += `<option value="${k.name}">${k.name}</option>`;
   });
+  // SUBKOMPONEN
+  let sArr = await fetchDropdown(SPREADSHEET_API.subkomponen, [
+    {komponen: "ENGINE", name: "ENGINE AIR INDUCTION & EXHAUST SYSTEM"}
+  ]);
+  kSel.onchange = function(){
+    let val = kSel.value;
+    let subSel = document.getElementById("formSubkomponenSelect");
+    subSel.innerHTML = `<option value="">--Pilih Sub Komponen--</option>`;
+    sArr.filter(s => s.komponen === val).forEach(s => {
+      subSel.innerHTML += `<option value="${s.name}">${s.name}</option>`;
+    });
+  }
+  // MANPOWER
   let manArr = await fetchDropdown(SPREADSHEET_API.manpower, [
     {name:"Andi"}, {name:"Budi"}, {name:"Cici"}
   ]);
   let manSel = document.getElementById("formManpowerSelect");
   manSel.innerHTML = `<option value="">--Pilih Manpower--</option>`;
   manArr.forEach(mp=>manSel.innerHTML+=`<option value="${mp.name}">${mp.name}</option>`);
+  // MATERIAL
   let matArr = await fetchDropdown(SPREADSHEET_API.material, [
     {name:"Filter Oli"}, {name:"Ban"}, {name:"Injector"}
   ]);
@@ -550,7 +544,7 @@ window.openMaterialStatus = function(idxBD, idxMat) {
   idxMaterialUpdateBD = idxBD;
   idxMaterialUpdateMat = idxMat;
   let row = breakdownData[idxBD];
-  let m = row.materialArr[idxMat];
+  let m = row.materialArr[idxMaterialUpdateMat];
   let html = `
     <div class="mb-1">
       <label class="form-label">Nama Material/Sparepart</label>
@@ -814,7 +808,6 @@ document.getElementById('exportExcelBtn').onclick = function() {
   XLSX.utils.book_append_sheet(wb, ws, "Breakdown");
   XLSX.writeFile(wb, "breakdown_list.xlsx");
 };
-// ---- INIT ----
 loadBreakdown();
 refreshManpowerList();
 refreshMaterialList();
