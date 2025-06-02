@@ -417,11 +417,12 @@ async function initDropdowns(){
     document.getElementById("formTypeSelect").value = opt.getAttribute("data-type") || "";
   };
   let kArr = await fetchDropdown(SPREADSHEET_API.komponen, [
-    {name:"Engine"}, {name:"Hydraulic"}, {name:"Transmission"}
-  ]);
-  let kSel = document.getElementById("formKomponenSelect");
-  kSel.innerHTML = `<option value="">--Pilih Komponen--</option>`;
-  kArr.forEach(k=>kSel.innerHTML += `<option value="${k.name}">${k.name}</option>`);
+  {name:"Engine"}, {name:"Hydraulic"}, {name:"Transmission"}
+]);
+console.log(kArr); // Debug: pastikan array benar
+let kSel = document.getElementById("formKomponenSelect");
+kSel.innerHTML = `<option value="">--Pilih Komponen--</option>`;
+kArr.forEach(k=>kSel.innerHTML += `<option value="${k.name}">${k.name}</option>`);
   let sArr = await fetchDropdown(SPREADSHEET_API.subkomponen, [
     {komponen:"Engine", name:"Injector"}, {komponen:"Engine", name:"Radiator"}, {komponen:"Hydraulic", name:"Main Pump"}
   ]);
