@@ -463,68 +463,6 @@ document.getElementById('formEditBarang').addEventListener('submit', async funct
 
 // Format Rupiah Live untuk Edit Modal
 document.getElementById("eHarga").addEventListener("input", (e) => e.target.value = formatRupiah(parseRupiah(e.target.value)));
-  
-  // Kosongkan dan isi ulang datalist untuk auto-suggest
-  const datalist = document.getElementById("itemList") || document.createElement("datalist");
-  datalist.id = "itemList";
-  datalist.innerHTML = "";
-  if(!document.getElementById("itemList")) document.body.appendChild(datalist);
-
-  data.forEach(item => {
-    // 1. Tambah opsi ke datalist auto-suggest
-    let option = document.createElement("option");
-    option.value = item["Item ID"] || "";
-    option.text = `${item["Item"] || ""} (${item["Part No"] || ""})`;
-    datalist.appendChild(option);
-
-    // 2. Render baris tabel master barang lengkap dengan tombol Edit & Delete
-    let tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${item["Item ID"] || "-"}</td>
-      <td>${item["Item"] || "-"}</td>
-      <td>${item["Part No"] || item["Part-No"] || "-"}</td>
-      <td>${item["Persamaan1"] || "-"} / ${item["Persamaan2"] || "-"}</td>
-      <td>${item["Satuan"] || "-"}</td>
-      <td>${item["Kategori"] || "-"}</td>
-      <td><span class="badge bg-secondary">${item["Stock"] || 0}</span></td>
-      <td><span class="badge bg-success">${item["Avaliable Stock"] || item["Available Stock"] || 0}</span></td>
-      <td>${formatRupiah(item["HARGA UPDATE"] || 0)}</td>
-      <td>
-        <div class="d-flex gap-1">
-          <button class="btn btn-sm btn-warning btn-edit-barang" data-id="${item["Item ID"]}"><i class="fa fa-edit"></i></button>
-          <button class="btn btn-sm btn-danger btn-delete-barang" data-id="${item["Item ID"]}"><i class="fa fa-trash"></i></button>
-        </div>
-      </td>
-    `;
-    tbody.appendChild(tr);
-  });
-
-  // Pasang Event Listener untuk tombol Edit
-  document.querySelectorAll(".btn-edit-barang").forEach(btn => {
-    btn.addEventListener("click", function() {
-      const itemId = this.getAttribute("data-id");
-      const targetItem = data.find(i => i["Item ID"] === itemId);
-      if(targetItem) {
-        bukaModalEditBarang(targetItem);
-      }
-    });
-  });
-
-  // Pasang Event Listener untuk tombol Delete
-  document.querySelectorAll(".btn-delete-barang").forEach(btn => {
-    btn.addEventListener("click", async function() {
-      const itemId = this.getAttribute("data-id");
-      if(confirm(`Apakah Anda yakin ingin menghapus Item ID: ${itemId} dari Database Master?`)) {
-        showLoading(true, "Menghapus item dari master...");
-        let success = await sendToSpreadsheet("delete_master_item", { itemId: itemId });
-        if(success) {
-          await fetchInventoryData(); // Refresh data terbaru
-        }
-        showLoading(false);
-      }
-    });
-  });
-}
 
     // --- RENDER COMPONENT ENGINE ---
     function renderInventoryTable() {
