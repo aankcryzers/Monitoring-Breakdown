@@ -344,27 +344,125 @@
       show ? el.classList.remove('d-none') : el.classList.add('d-none');
     }
 
-    // --- SYNC ENGINE DATABASE ---
-    async function fetchSpreadsheetData() {
-      showLoading(true, "Mengambil Data Transaksi WO...");
-      try {
-        let res = await fetch(SCRIPT_WEB_URL + "?action=read");
-        let json = await res.json();
-        if (json.status === "success") { woData = json.data; renderWOTables(); }
-      } catch (err) { console.error(err); } finally { showLoading(false); }
+   // --- SYNC ENGINE DATABASE ---
+async function fetchInventoryData() {
+  try {
+    let res = await fetch(SCRIPT_WEB_URL + "?action=read_inventory");
+    let json = await res.json();
+    if (json.status === "success") { 
+      dbBarangData = json.data; 
+      // PERBAIKAN: Masukkan variabel data ke dalam render
+      renderInventoryTable(dbBarangData); 
     }
+  } catch (err) { console.error(err); }
+}
 
-    async function fetchInventoryData() {
-      try {
-        let res = await fetch(SCRIPT_WEB_URL + "?action=read_inventory");
-        let json = await res.json();
-        if (json.status === "success") { dbBarangData = json.data; renderInventoryTable(); }
-      } catch (err) { console.error(err); }
-    }
-
-    function renderInventoryTable(data) {
+// --- FUNGSI RENDER SATU-SATUNYA (HAPUS FUNGSI YANG LAMA) ---
+function renderInventoryTable(data) {
+  if (!data) return; // Mencegah error map undefined
   const tbody = document.getElementById("dbBarangTableBody");
   tbody.innerHTML = "";
+  
+  // Update datalist untuk auto-suggest form masuk
+  const datalist = document.getElementById('itemIdSuggest');
+  if(datalist) {
+    datalist.innerHTML = data.map(item => `<option value="${item["Item ID"]}"> ${item["Item"]} [PN: ${item["Part-No"] || item["Part No"] || '-'}]</option>`).join('');
+  }
+
+  if(data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="10" class="text-center text-muted">Database Kosong</td></tr>';
+    return;
+  }
+
+  data.forEach(item => {
+    let stock = Number(item["Stock"]) || 0;
+    let avail = Number(item["Available Stock"] || item["Avaliable Stock"]) || 0;
+    let style = avail <= 0 ? 'text-danger fw-bold' : (avail <= 2 ? 'text-warning fw-bold' : '');
+
+    let tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td class="text-info fw-bold">${item["Item ID"] || "-"}</td>
+      <td>${item["Item"] || "-"}</td>
+      <td>${item["Part No"] || item["Part-No"] || "-"}</td>
+      <td class="text-muted small">${item["Persamaan1"] || "-"} / ${item["Persamaan2"] || "-"}</td>
+      <td>${item["Satuan"] || "-"}</td>
+      <td><span class="badge bg-secondary">${item["Kategori"] || "-"}</span></td>
+      <td>${stock}</td>
+      <td class="${style}">${avail}</td>
+      <td>${formatRupiah(item["HARGA UPDATE"] || 0)}</td>
+      <td>
+        <div class="d-flex gap-1">
+          <button class="btn btn-sm btn-warning btn-edit-barang" data-id="${item["Item ID"]}"><i class="fa fa-edit"></i></button>
+          <button class="btn btn-sm btn-danger btn-delete-barang" data-id="${item["Item ID"]}"><i class="fa fa-trash"></i></button>
+        </div>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // Listener Tombol Edit
+  document.querySelectorAll(".btn-edit-barang").forEach(btn => {
+    btn.addEventListener("click", function() {
+      const itemId = this.getAttribute("data-id");
+      const targetItem = dbBarangData.find(i => i["Item ID"] === itemId);
+      if(targetItem) { bukaModalEditBarang(targetItem); }
+    });
+  });
+
+  // Listener Tombol Delete
+  document.querySelectorAll(".btn-delete-barang").forEach(btn => {
+    btn.addEventListener("click", async function() {
+      const itemId = this.getAttribute("data-id");
+      if(confirm(`Yakin HAPUS Item ID: ${itemId} dari Master?`)) {
+        showLoading(true, "Menghapus item...");
+        let success = await sendToSpreadsheet("delete_master_item", { itemId: itemId });
+        if(success) await fetchInventoryData();
+        showLoading(false);
+      }
+    });
+  });
+}
+
+// --- FUNGSI BUKA MODAL EDIT ---
+function bukaModalEditBarang(item) {
+  document.getElementById('eItemId').value = item["Item ID"] || '';
+  document.getElementById('eKategori').value = item["Kategori"] || '';
+  document.getElementById('eItem').value = item["Item"] || '';
+  document.getElementById('ePartNo').value = item["Part No"] || item["Part-No"] || '';
+  document.getElementById('ePersamaan1').value = item["Persamaan1"] || '';
+  document.getElementById('ePersamaan2').value = item["Persamaan2"] || '';
+  document.getElementById('eSatuan').value = item["Satuan"] || '';
+  document.getElementById('eHarga').value = formatRupiah(item["HARGA UPDATE"] || 0);
+  
+  new bootstrap.Modal(document.getElementById('modalEditBarang')).show();
+}
+
+// --- HANDLER SUBMIT EDIT ---
+document.getElementById('formEditBarang').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  showLoading(true, "Mengupdate Master Barang...");
+  
+  let payload = {
+    itemId: document.getElementById('eItemId').value,
+    item: document.getElementById('eItem').value.trim(),
+    partNo: document.getElementById('ePartNo').value.trim(),
+    persamaan1: document.getElementById('ePersamaan1').value.trim(),
+    persamaan2: document.getElementById('ePersamaan2').value.trim(),
+    satuan: document.getElementById('eSatuan').value.trim(),
+    kategori: document.getElementById('eKategori').value.trim(),
+    harga: parseRupiah(document.getElementById('eHarga').value)
+  };
+
+  let success = await sendToSpreadsheet("edit_master_item", payload); // Pastikan action ini ada di Code.gs Google Sheet Bapak
+  if(success) {
+    bootstrap.Modal.getInstance(document.getElementById('modalEditBarang')).hide();
+    await fetchInventoryData();
+  }
+  showLoading(false);
+});
+
+// Format Rupiah Live untuk Edit Modal
+document.getElementById("eHarga").addEventListener("input", (e) => e.target.value = formatRupiah(parseRupiah(e.target.value)));
   
   // Kosongkan dan isi ulang datalist untuk auto-suggest
   const datalist = document.getElementById("itemList") || document.createElement("datalist");
