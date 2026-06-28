@@ -385,40 +385,48 @@
       else el.classList.add('d-none');
     }
 
-    /* =========================
-       FETCH WO DATA
-    ========================= */
-    async function fetchSpreadsheetData() {
-      try {
-        let res = await fetch(SCRIPT_WEB_URL + "?action=read_wo");
-        let json = await res.json();
-
-        if(json.status === "success") {
-          woData = json.data || [];
-          renderWOTables();
-        }
-      } catch(err) {
-        console.error("WO Fetch Error:", err);
-      }
+   /* =========================
+   FETCH WO DATA (DIPERBAIKI)
+========================= */
+async function fetchSpreadsheetData() {
+  try {
+    // Kirim sebagai POST, bukan GET
+    let res = await fetch(SCRIPT_WEB_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify({ action: "read_wo" }) // Data dikirim di sini
+    });
+    
+    let json = await res.json();
+    if(json.status === "success") {
+      woData = json.data || [];
+      renderWOTables();
     }
+  } catch(err) {
+    console.error("WO Fetch Error:", err);
+  }
+}
 
-    /* =========================
-       FETCH INVENTORY
-    ========================= */
-    async function fetchInventoryData() {
-      try {
-        let res = await fetch(SCRIPT_WEB_URL + "?action=read_inventory");
-        let json = await res.json();
-
-        if(json.status === "success") {
-          dbBarangData = json.data || [];
-          renderInventoryTable(dbBarangData);
-        }
-      } catch(err) {
-        console.error("Inventory Error:", err);
-      }
+/* =========================
+   FETCH INVENTORY (DIPERBAIKI)
+========================= */
+async function fetchInventoryData() {
+  try {
+    let res = await fetch(SCRIPT_WEB_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify({ action: "read_inventory" }) // Data dikirim di sini
+    });
+    
+    let json = await res.json();
+    if(json.status === "success") {
+      dbBarangData = json.data || [];
+      renderInventoryTable(dbBarangData);
     }
-
+  } catch(err) {
+    console.error("Inventory Error:", err);
+  }
+}
     /* =========================
        INVENTORY RENDER
     ========================= */
