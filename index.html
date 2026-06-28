@@ -234,7 +234,7 @@
     // =========================================================================
     // TEMPELKAN WEB APP URL GOOGLE SCRIPT ANDA DI BAWAH INI
     // =========================================================================
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzV_7J5zcRDcS7tfvH0tCagz54tITpqKAwdCsdEaUMQue7lj1JLy_rE_0Bt0nIoTAIwbQ/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw-8Np1rneYt0k3UXnZz25Asqn4oHYih42_GMRHbiTYaMlwmKGe3oXo9j4e4dvkODlkWw/exec";
 
     let woData = [];
     let dbBarangData = [];
@@ -454,12 +454,13 @@
       document.getElementById('inStatusBD').disabled = disable;
     }
 
+    // 1. TABEL INVENTORY (DATABASE GUDANG) DENGAN EDIT & HAPUS
     function renderInventoryTable(data) {
       const tbody = document.getElementById("dbBarangTableBody");
       const datalist = document.getElementById("itemIdSuggest");
 
       if(!data || data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted">Database Kosong</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="10" class="text-center text-muted">Database Kosong</td></tr>`;
         return;
       }
 
@@ -467,10 +468,11 @@
         let stock = Number(item["Stock"]) || 0;
         let avail = Number(item["Available Stock"] || item["Avaliable Stock"]) || 0;
         let style = avail <= 0 ? 'text-danger fw-bold' : avail <= 2 ? 'text-warning fw-bold' : '';
+        let cleanId = String(item["Item ID"]).trim();
 
         return `
           <tr>
-            <td class="text-info fw-bold">${item["Item ID"] || "-"}</td>
+            <td class="text-info fw-bold">${cleanId || "-"}</td>
             <td>${item["Item"] || "-"}</td>
             <td>${item["Part-No"] || item["Part No"] || "-"}</td>
             <td>${item["Persamaan1"] || "-"} / ${item["Persamaan2"] || "-"}</td>
@@ -479,6 +481,12 @@
             <td>${stock}</td>
             <td class="${style}">${avail}</td>
             <td>${formatRupiah(item["HARGA UPDATE"] || 0)}</td>
+            <td class="text-center">
+              <div class="d-flex gap-1 justify-content-center">
+                <button class="btn btn-apple-primary btn-sm px-2" onclick="pemicuEditInventory('${cleanId}')"><i class="fa fa-edit"></i></button>
+                <button class="btn btn-apple-danger btn-sm px-2" onclick="pemicuHapusInventory('${cleanId}')"><i class="fa fa-trash"></i></button>
+              </div>
+            </td>
           </tr>
         `;
       }).join("");
@@ -490,6 +498,7 @@
       }
     }
 
+    // 2. TABEL WORK ORDER DENGAN EDIT & HAPUS
     function renderWOTables() {
       const openT = document.getElementById('mainTableBodyOpen');
       const closeT = document.getElementById('mainTableBodyClose');
@@ -508,7 +517,11 @@
               <td>${wo.deskripsi}</td>
               <td>${wo.jamMulai}</td>
               <td class="text-center">
-                <button class="btn btn-apple-success btn-sm px-3" onclick="openFormClose('${wo.nowo}')">Close</button>
+                <div class="d-flex gap-1 justify-content-center">
+                  <button class="btn btn-apple-success btn-sm px-2" onclick="openFormClose('${wo.nowo}')">Close</button>
+                  <button class="btn btn-apple-primary btn-sm px-2" onclick="pemicuEditWO('${wo.nowo}')"><i class="fa fa-edit"></i></button>
+                  <button class="btn btn-apple-danger btn-sm px-2" onclick="pemicuHapusWO('${wo.nowo}')"><i class="fa fa-trash"></i></button>
+                </div>
               </td>
             </tr>`;
         } else {
@@ -521,12 +534,18 @@
               <td>${wo.durasiMenit || '-'}</td>
               <td>${(wo.manpowerArr || []).join(", ")}</td>
               <td><span class="badge bg-success">RFU</span></td>
+              <td class="text-center">
+                <div class="d-flex gap-1 justify-content-center">
+                  <button class="btn btn-apple-primary btn-sm px-2" onclick="pemicuEditWO('${wo.nowo}')"><i class="fa fa-edit"></i></button>
+                  <button class="btn btn-apple-danger btn-sm px-2" onclick="pemicuHapusWO('${wo.nowo}')"><i class="fa fa-trash"></i></button>
+                </div>
+              </td>
             </tr>`;
         }
       });
 
       openT.innerHTML = openHTML || `<tr><td colspan="8" class="text-center text-muted">Tidak ada penanganan open</td></tr>`;
-      closeT.innerHTML = closeHTML || `<tr><td colspan="7" class="text-center text-muted">Riwayat kosong</td></tr>`;
+      closeT.innerHTML = closeHTML || `<tr><td colspan="8" class="text-center text-muted">Riwayat kosong</td></tr>`;
     }
 
     function renderMaterialSubTable() {
@@ -629,6 +648,8 @@
         if(this.value === '') this.value = 'Rp 0';
       });
     }
+    
+    
   </script>
 </body>
 </html>
