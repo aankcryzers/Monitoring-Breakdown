@@ -530,6 +530,7 @@ window.openFormClose = function(nowo) {
 
   new bootstrap.Modal(document.getElementById('modalFormWO')).show();
 };
+  
 
 /* =========================
    SUBMIT WO
@@ -563,22 +564,7 @@ document.getElementById('mainWOForm').addEventListener('submit', async function(
 
   showLoading(false);
 });
-    /* =========================
-   REAL-TIME ENGINE
-========================= */
-
-let lastWOHash = "";
-let lastInventoryHash = "";
-
-// interval kontrol
-const REFRESH_INTERVAL = 5000; // 5 detik (aman untuk Google Script)
-
-function startRealTimeSync() {
-  setInterval(async () => {
-    await syncWORealTime();
-    await syncInventoryRealTime();
-  }, REFRESH_INTERVAL);
-}
+    
 </script>
 
 </body>
