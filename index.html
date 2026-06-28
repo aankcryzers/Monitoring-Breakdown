@@ -73,6 +73,7 @@
     .modal-content { background: var(--main-bg); color: var(--text); border-radius: 10px; border: 1px solid #24253a;}
     .modal-footer .btn {border-radius: 6px;}
     .modal-backdrop {background: #181928b0;}
+    .cursor-pointer { cursor: pointer; }
     .d-none {display:none!important;}
     .menu-mobile-trigger {display:none;}
     @media (max-width: 800px){
@@ -145,13 +146,14 @@
               <th>Deskripsi</th>
               <th>Jam Mulai</th>
               <th>Jam Selesai</th>
-              <th>Durasi (menit)</th>
+              <th>Durasi (mnt)</th>
               <th>Manpower</th>
               <th>Sparepart</th>
               <th>Part No</th>
               <th>Qty</th>
-              <th>Status Material</th>
+              <th>Status Mat</th>
               <th>Status BD</th>
+              <th>Aksi</th>
             </tr>
           </thead>
           <tbody id="mainTableBodyClose"></tbody>
@@ -161,7 +163,7 @@
   </div>
 </div>
 
-<!-- Modal Form WO -->
+<!-- Modal Form WO (New) -->
 <div class="modal fade modal-formwo" id="modalFormWO" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
@@ -225,18 +227,18 @@
   </div>
 </div>
 
-<!-- Modal CLOSE WO -->
+<!-- Modal CLOSE WO & EDIT RFU -->
 <div class="modal fade" id="modalCloseWO" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content" style="background:#23243c;">
       <div class="modal-header">
-        <h5 class="modal-title">Close WO: RFU, Manpower, Material</h5>
+        <h5 class="modal-title" id="closeModalTitle">Close WO: RFU, Manpower, Material</h5>
         <button type="button" class="btn-close" style="background:var(--danger);" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
         <div class="mb-3">
           <label class="form-label">Jam Selesai (RFU):</label>
-          <input type="time" class="form-control" id="inputCloseTime">
+          <input type="time" class="form-control" id="inputCloseTime" required>
         </div>
         <div class="form-group">
           <label class="form-label">Deskripsi Pekerjaan</label>
@@ -300,7 +302,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-main" id="btnCloseWO">Simpan Close WO</button>
+        <button type="button" class="btn btn-main" id="btnCloseWO">Simpan Data Close</button>
       </div>
     </div>
   </div>
@@ -311,7 +313,7 @@
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content" style="background:#23243c;">
       <div class="modal-header">
-        <h5 class="modal-title">Login Admin untuk Edit WO</h5>
+        <h5 class="modal-title" id="loginModalTitle">Login Admin</h5>
         <button type="button" class="btn-close" style="background:var(--danger);" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
@@ -332,7 +334,7 @@
   </div>
 </div>
 
-<!-- Modal Edit WO -->
+<!-- Modal Edit WO Open -->
 <div class="modal fade" id="modalEditWO" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
@@ -397,7 +399,7 @@
 <script>
 // ==========================================
 // PASTE URL SPREADSHEET APPS SCRIPT ANDA DI SINI
-const SCRIPT_WEB_URL = "https://script.google.com/macros/s/AKfycbwnI-wDVb2GVskECdBfzfNdK1VLiQdRdsdA8DqLiYi28JdbTzI1wgb-Qwt4NoVtvPoUHA/exec";
+const SCRIPT_WEB_URL = "URL_APPS_SCRIPT_ANDA_DISINI";
 // ==========================================
 
 const SPREADSHEET_API = {
@@ -407,6 +409,8 @@ const SPREADSHEET_API = {
 let breakdownData = [];
 const SUGGEST_KEY = "bd_wo_suggest";
 let suggestData = {};
+let currentAuthAction = ""; // "edit_open", "edit_close", "delete"
+let selectedRowIndex = null;
 
 function showLoading(show) {
   document.getElementById("loadingOverlay").style.display = show ? "flex" : "none";
@@ -457,7 +461,7 @@ async function fetchSpreadsheetData() {
     }
   } catch (err) {
     console.error("Gagal memuat data dari Spreadsheet", err);
-  } finally {
+  } finaly {
     showLoading(false);
   }
 }
@@ -514,7 +518,6 @@ async function initUnitDropdown(){
 
 function generateNextWO() {
   let count = breakdownData.length + 1;
-  // Cari ID Max jika ada struktur kode numerik di Spreadsheet Anda
   breakdownData.forEach(r => {
     let num = parseInt((r.nowo || "").replace("WO-", ""));
     if(!isNaN(num) && num >= count) count = num + 1;
@@ -531,17 +534,16 @@ function parseRupiah(val) {
   return Number((val||"").toString().replace(/[^\d]/g, "")) || 0;
 }
 
-// System Init
 loadSuggest();
 initSuggestDropdowns();
 initUnitDropdown();
+
 if(SCRIPT_WEB_URL !== "URL_APPS_SCRIPT_ANDA_DISINI") {
   fetchSpreadsheetData();
 } else {
-  alert("Harap masukkan URL Apps Script Anda terlebih dahulu di bagian variabel SCRIPT_WEB_URL!");
+  alert("Harap masukkan URL Apps Script Anda di variabel SCRIPT_WEB_URL!");
 }
 
-// Elements Events
 const sidebar = document.getElementById("sidebar");
 document.getElementById("sidebarToggleBtn").onclick = () => sidebar.classList.toggle("hide");
 document.getElementById("sidebarMobileBtn").onclick = () => sidebar.classList.toggle("show");
@@ -579,7 +581,7 @@ document.getElementById("bdForm").addEventListener("submit", function(e) {
   sendToSpreadsheet("create", row);
 });
 
-// Close WO Setup
+// Close / RFU Logic 
 let idxWOClose = null;
 let formManpowerArrClose = [];
 let formMaterialArrClose = [];
@@ -588,6 +590,7 @@ window.openCloseWOModal = function(idx) {
   idxWOClose = idx;
   formManpowerArrClose = [];
   formMaterialArrClose = [];
+  document.getElementById('closeModalTitle').innerText = "Close WO: RFU, Manpower, Material";
   document.getElementById('inputCloseTime').value = "";
   document.getElementById('inputCloseDescPekerjaan').value = "";
   refreshManpowerListClose();
@@ -663,37 +666,79 @@ document.getElementById('btnCloseWO').addEventListener("click", () => {
   sendToSpreadsheet("close", wo);
 });
 
-// Edit WO Open Setup
-let editIdxWO = null;
-window.openEditWOModal = (idx) => {
-  editIdxWO = idx;
+// Gatekeeper Login Admin (Reusable)
+window.openAuthGate = function(idx, actionType) {
+  selectedRowIndex = idx;
+  currentAuthAction = actionType;
   document.getElementById("loginEditUser").value = "";
   document.getElementById("loginEditPass").value = "";
   document.getElementById("loginEditError").classList.add("d-none");
+  
+  if(actionType === "delete") {
+    document.getElementById("loginModalTitle").innerText = "Login Admin untuk Hapus WO";
+  } else {
+    document.getElementById("loginModalTitle").innerText = "Login Admin untuk Edit WO";
+  }
   new bootstrap.Modal(document.getElementById('modalLoginEdit')).show();
 };
 
 document.getElementById('btnLoginEditWO').addEventListener('click', () => {
   let user = document.getElementById("loginEditUser").value.trim();
   let pass = document.getElementById("loginEditPass").value.trim();
+  
   if(user === "admin" && pass === "admin") {
     bootstrap.Modal.getInstance(document.getElementById('modalLoginEdit')).hide();
-    let row = breakdownData[editIdxWO];
-    document.getElementById("editIdxWO").value = editIdxWO;
-    document.getElementById("editNoWO").value = row.nowo;
-    document.getElementById("editTanggal").value = row.tanggal || "";
-    document.getElementById("editUnit").value = row.unit || "";
-    document.getElementById("editType").value = row.type || "";
-    document.getElementById("editJamMulai").value = row.jamMulai || "";
-    document.getElementById("editKomponen").value = row.komponen || "";
-    document.getElementById("editSubkomponen").value = row.subkomponen || "";
-    document.getElementById("editDeskripsi").value = row.deskripsi || "";
-    document.getElementById("editStatusPekerjaan").value = row.statusPekerjaan || "Progres";
-    new bootstrap.Modal(document.getElementById('modalEditWO')).show();
+    
+    if (currentAuthAction === "edit_open") {
+      executeEditOpenModal(selectedRowIndex);
+    } else if (currentAuthAction === "edit_close") {
+      executeEditCloseModal(selectedRowIndex);
+    } else if (currentAuthAction === "delete") {
+      executeDeleteAction(selectedRowIndex);
+    }
   } else {
     document.getElementById("loginEditError").classList.remove("d-none");
   }
 });
+
+// Fungsi Trigger Aksi setelah lolos Login
+function executeEditOpenModal(idx) {
+  let row = breakdownData[idx];
+  document.getElementById("editIdxWO").value = idx;
+  document.getElementById("editNoWO").value = row.nowo;
+  document.getElementById("editTanggal").value = row.tanggal || "";
+  document.getElementById("editUnit").value = row.unit || "";
+  document.getElementById("editType").value = row.type || "";
+  document.getElementById("editJamMulai").value = row.jamMulai || "";
+  document.getElementById("editKomponen").value = row.komponen || "";
+  document.getElementById("editSubkomponen").value = row.subkomponen || "";
+  document.getElementById("editDeskripsi").value = row.deskripsi || "";
+  document.getElementById("editStatusPekerjaan").value = row.statusPekerjaan || "Progres";
+  new bootstrap.Modal(document.getElementById('modalEditWO')).show();
+}
+
+function executeEditCloseModal(idx) {
+  // Gunakan modal Close WO lama tapi isi variabel arraynya dengan data yang sudah tersimpan
+  idxWOClose = idx;
+  let row = breakdownData[idx];
+  document.getElementById('closeModalTitle').innerText = "Edit Data RFU: " + row.nowo;
+  document.getElementById('inputCloseTime').value = row.jamSelesai || "";
+  document.getElementById('inputCloseDescPekerjaan').value = row.descPekerjaan || "";
+  
+  formManpowerArrClose = [...(row.manpowerArr || [])];
+  formMaterialArrClose = [...(row.materialArr || [])];
+  
+  refreshManpowerListClose();
+  refreshMaterialListClose();
+  new bootstrap.Modal(document.getElementById('modalCloseWO')).show();
+}
+
+function executeDeleteAction(idx) {
+  let row = breakdownData[idx];
+  if(confirm(`Apakah Anda yakin ingin menghapus data ${row.nowo} secara permanen?`)) {
+    sendToSpreadsheet("delete", { nowo: row.nowo });
+  }
+}
 
 document.getElementById("editFormWO").addEventListener("submit", (e) => {
   e.preventDefault();
@@ -730,7 +775,8 @@ function renderAllTables() {
       <td><span class="badge bg-warning">${row.statusPekerjaan||'Progres'}</span></td>
       <td>
         <button type="button" class="btn btn-sm btn-success btn-action" onclick="openCloseWOModal(${breakdownData.indexOf(row)})" title="Close WO"><i class="fa fa-check"></i></button>
-        <button type="button" class="btn btn-sm btn-warning btn-action" onclick="openEditWOModal(${breakdownData.indexOf(row)})" title="Edit WO"><i class="fa fa-edit"></i></button>
+        <button type="button" class="btn btn-sm btn-warning btn-action" onclick="openAuthGate(${breakdownData.indexOf(row)}, 'edit_open')" title="Edit WO Open"><i class="fa fa-edit"></i></button>
+        <button type="button" class="btn btn-sm btn-danger btn-action text-danger" onclick="openAuthGate(${breakdownData.indexOf(row)}, 'delete')" title="Hapus WO"><i class="fa fa-trash"></i></button>
       </td>
     </tr>
   `).join('') || `<tr><td colspan="11" class="text-center text-muted">Belum ada data open</td></tr>`;
@@ -756,11 +802,14 @@ function renderAllTables() {
       <td>${(row.materialArr||[]).map(m=>m.qty).join('<br>')}</td>
       <td>${(row.materialArr||[]).map(m=>m.statusMaterial||"").join('<br>')}</td>
       <td><span class="badge bg-success">${row.status||'RFU'}</span></td>
+      <td>
+        <button type="button" class="btn btn-sm btn-warning btn-action" onclick="openAuthGate(${breakdownData.indexOf(row)}, 'edit_close')" title="Edit WO Close"><i class="fa fa-edit"></i></button>
+        <button type="button" class="btn btn-sm btn-danger btn-action text-danger" onclick="openAuthGate(${breakdownData.indexOf(row)}, 'delete')" title="Hapus WO Close"><i class="fa fa-trash"></i></button>
+      </td>
     </tr>
-  `).join('') || `<tr><td colspan="17" class="text-center text-muted">Belum ada data rfu</td></tr>`;
+  `).join('') || `<tr><td colspan="18" class="text-center text-muted">Belum ada data rfu</td></tr>`;
 }
 
-// Export Excel Function
 document.getElementById('exportExcelBtn').addEventListener('click', () => {
   let rows = [["No", "No WO", "Tanggal", "Unit/CN", "Type", "Komponen", "Sub Komponen", "Deskripsi", "Jam Mulai", "Jam Selesai", "Durasi (menit)", "Manpower", "Status Pekerjaan", "Deskripsi Pekerjaan", "Material/Sparepart", "Part No", "Qty", "Satuan", "Harga", "Total Harga", "Status Material", "Status BD"]];
   
