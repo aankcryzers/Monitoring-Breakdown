@@ -2,56 +2,22 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>PLANT</title>
+  <title>PLANT SYSTEM</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link href="https://fonts.googleapis.com/css?family=Montserrat:700,400&display=swap" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
-  <style>
-    :root {
-      --main-bg: #1a1c28;
-      --sidebar-bg: #23243c;
-      --card-bg: #222437;
-      --input-bg: #23243c;
-      --text: #eaeefd;
-      --muted: #95a2c7;
-      --primary: #29a8ff;
-      --danger: #ec5555;
-      --success: #34d399;
-      --accent: #2fc4f9;
-      font-size: 15px;
-    }
-    html, body { background: var(--main-bg); color: var(--text); font-family: 'Montserrat', Arial, sans-serif; overflow-x: hidden; }
-    .sidebar { width: 260px; background: var(--sidebar-bg); height: 100vh; position: fixed; top:0; left:0; padding: 20px; border-right: 1px solid #2e304e; z-index: 100; }
-    .sidebar-brand { font-size: 1.3rem; font-weight: 700; color: var(--primary); margin-bottom: 30px; display: flex; align-items: center; gap: 10px; }
-    .nav-link { color: var(--muted); font-weight: 700; padding: 12px 15px; border-radius: 10px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; transition: all 0.2s; text-decoration: none; }
-    .nav-link:hover, .nav-link.active { background: rgba(41, 168, 255, 0.1); color: var(--text); }
-    .nav-link.active { border-left: 4px solid var(--primary); }
-    .main-container { margin-left: 260px; padding: 30px; min-height: 100vh; }
-    .dashboard-title { font-size: 1.6rem; font-weight: 700; color: var(--text); margin-bottom: 25px; }
-    .section-title { font-size: 1.1rem; font-weight: 700; color: var(--accent); margin-top: 30px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 0.5px; }
-    .main-table { width: 100%; border-collapse: separate; border-spacing: 0; background: var(--card-bg); border-radius: 14px; overflow: hidden; border: 1px solid #2e304e; margin-bottom: 20px; text-align: left; vertical-align: middle; }
-    .main-table th { background: #1f2035; color: var(--muted); font-weight: 700; padding: 14px 16px; border-bottom: 1px solid #2e304e; font-size: 0.85rem; text-transform: uppercase; }
-    .main-table td { padding: 14px 16px; border-bottom: 1px solid #2e304e; font-size: 0.9rem; color: var(--text); }
-    .main-table tr:last-child td { border-bottom: none; }
-    .btn-main { background: var(--primary); color: #fff; font-weight: 700; border-radius: 10px; padding: 8px 20px; border: none; transition: all 0.2s; }
-    .btn-main:hover { opacity: 0.9; color: #fff; }
-    .form-control, .form-select { background: var(--input-bg); border: 1px solid #2e304e; color: var(--text); border-radius: 10px; padding: 10px 14px; font-size: 0.95rem; }
-    .form-control:focus, .form-select:focus { background: var(--input-bg); border-color: var(--primary); color: var(--text); box-shadow: none; }
-    .form-label { font-weight: 700; font-size: 0.85rem; color: var(--muted); margin-bottom: 6px; }
-    .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(26,28,40,0.8); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 15px; }
-    .spinner { width: 50px; height: 50px; border: 5px solid #2e304e; border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-  </style>
+  
+  <!-- Memasukkan style iOS premium dari file style.html -->
+  <?!= include('style'); ?>
 </head>
 <body>
 
   <div class="loading-overlay d-none" id="loadingOverlay">
     <div class="spinner"></div>
-    <div class="fw-bold text-light" id="loadingText">Sinkronisasi Server Tambang...</div>
+    <div class="fw-bold text-light" id="loadingText">Menghubungkan ke Server...</div>
   </div>
 
-  <!-- SIDEBAR NAVIGATION -->
+  <!-- NAVIGATION SIDEBAR (iOS STYLE) -->
   <div class="sidebar">
     <div class="sidebar-brand"><i class="fa fa-helmet-safety text-warning"></i> PLANT SYSTEM</div>
     <ul class="nav flex-column p-0 m-0">
@@ -60,25 +26,27 @@
     </ul>
   </div>
 
-  <!-- MAIN APPS SURFACE -->
+  <!-- APPLICATION FRAMEWORK SURFACE -->
   <div class="main-container" id="mainApp">
     
-    <!-- INTERFACES 1: WO BREAKDOWN SCREEN -->
+    <!-- MODULE INTERFACE 1: WORK ORDERS -->
     <div id="plant-wo-content">
-      <div class="dashboard-title d-flex justify-content-between align-items-center">
-        <span>Monitoring & Penanganan Work Order</span>
+      <div class="dashboard-title d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+        <span>Monitoring Work Order</span>
         <button class="btn btn-main" id="btnShowFormWO"><i class="fa fa-plus"></i> Buat WO Baru</button>
       </div>
 
-      <div class="section-title text-danger"><i class="fa fa-folder-open"></i> OPEN Breakdown</div>
+      <div class="section-title text-danger"><i class="fa fa-folder-open"></i> OPEN Breakdown Case</div>
       <div class="table-responsive">
         <table class="main-table">
           <thead>
             <tr>
-              <th>No WO</th><th>Tanggal</th><th>Unit/CN</th><th>Type</th><th>Komponen</th><th>Deskripsi Kasus</th><th>Jam Mulai</th><th>Aksi</th>
+              <th>No WO</th><th>Tanggal</th><th>Unit/CN</th><th>Type</th><th>Komponen</th><th>Kasus</th><th>Jam Mulai</th><th class="text-center">Aksi</th>
             </tr>
           </thead>
-          <tbody id="mainTableBodyOpen"></tbody>
+          <tbody id="mainTableBodyOpen">
+            <tr><td colspan="8" class="text-center text-muted">Memuat data...</td></tr>
+          </tbody>
         </table>
       </div>
 
@@ -90,103 +58,99 @@
               <th>No WO</th><th>Unit/CN</th><th>Komponen</th><th>Jam Selesai</th><th>Durasi (Mnt)</th><th>Manpower</th><th>Status BD</th>
             </tr>
           </thead>
-          <tbody id="mainTableBodyClose"></tbody>
+          <tbody id="mainTableBodyClose">
+            <tr><td colspan="7" class="text-center text-muted">Memuat data...</td></tr>
+          </tbody>
         </table>
       </div>
     </div>
 
-   <!-- INTERFACES 2: INVENTORY LOGISTICS DATABASE -->
+    <!-- MODULE INTERFACE 2: INVENTORY -->
     <div id="inventory-content" class="d-none">
-      <div class="dashboard-title d-flex justify-content-between align-items-center">
-        <span>Logistik Suku Cadang Alat Berat</span>
+      <div class="dashboard-title d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+        <span>Logistik Suku Cadang</span>
         <div class="d-flex gap-2">
-          <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalMasterBarangBaru"><i class="fa fa-plus-circle"></i> Tambah Master Item Baru</button>
-          <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalBarangMasuk"><i class="fa fa-cart-plus"></i> Input Barang Masuk (Vendor)</button>
+          <button class="btn btn-apple-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalMasterBarangBaru"><i class="fa fa-plus-circle"></i> Item Baru</button>
+          <button class="btn btn-apple-success btn-sm px-3" data-bs-toggle="modal" data-bs-target="#modalBarangMasuk"><i class="fa fa-cart-plus"></i> Barang Masuk</button>
         </div>
       </div>
       <div class="table-responsive">
         <table class="main-table">
           <thead>
             <tr>
-              <th>Item ID</th>
-              <th>Nama Item</th>
-              <th>Part No</th>
-              <th>Persamaan 1 / 2</th>
-              <th>Satuan</th>
-              <th>Kategori</th>
-              <th>Physical Stock</th>
-              <th>Available Stock</th>
-              <th>Harga Update</th>
+              <th>Item ID</th><th>Nama Item</th><th>Part No</th><th>Persamaan 1/2</th><th>Satuan</th><th>Kategori</th><th>Stok Fisik</th><th>Available Stock</th><th>Harga Update</th>
             </tr>
           </thead>
-          <tbody id="dbBarangTableBody"></tbody>
+          <tbody id="dbBarangTableBody">
+            <tr><td colspan="9" class="text-center text-muted">Memuat database gudang...</td></tr>
+          </tbody>
         </table>
       </div>
     </div>
 
-    <!-- MODAL: TAMBAH MASTER BARANG BARU -->
+    <!-- MODAL: REGISTER NEW MASTER ITEM -->
     <div class="modal fade" id="modalMasterBarangBaru" tabindex="-1">
       <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content" style="background: var(--card-bg); border: 1px solid #2e304e;">
+        <div class="modal-content">
           <form id="formMasterBarangBaru" autocomplete="off">
-            <div class="modal-header border-secondary">
-              <h5 class="modal-title text-primary"><i class="fa fa-box"></i> Daftarkan Item Baru ke Master</h5>
+            <div class="modal-header">
+              <h5 class="modal-title"><i class="fa fa-box text-primary"></i> Daftarkan Item Baru</h5>
               <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
               <div class="row">
-                <div class="col-md-6 mb-2"><label class="form-label">Item ID Baru</label><input type="text" class="form-control" id="mItemId" placeholder="Contoh: ITM-001" required></div>
-                <div class="col-md-6 mb-2"><label class="form-label">Kategori</label><input type="text" class="form-control" id="mKategori" placeholder="Filter / Hose" required></div>
+                <div class="col-6 mb-3"><label class="form-label">Item ID Baru</label><input type="text" class="form-control" id="mItemId" placeholder="ITM-001" required></div>
+                <div class="col-6 mb-3"><label class="form-label">Kategori</label><input type="text" class="form-control" id="mKategori" placeholder="Hose" required></div>
               </div>
-              <div class="mb-2"><label class="form-label">Nama Barang</label><input type="text" class="form-control" id="mItem" required></div>
-              <div class="mb-2"><label class="form-label">Part No</label><input type="text" class="form-control" id="mPartNo" required></div>
+              <div class="mb-3"><label class="form-label">Nama Barang</label><input type="text" class="form-control" id="mItem" required></div>
+              <div class="mb-3"><label class="form-label">Part No</label><input type="text" class="form-control" id="mPartNo" required></div>
               <div class="row">
-                <div class="col-md-6 mb-2"><label class="form-label">Persamaan 1</label><input type="text" class="form-control" id="mPersamaan1" placeholder="-"></div>
-                <div class="col-md-6 mb-2"><label class="form-label">Persamaan 2</label><input type="text" class="form-control" id="mPersamaan2" placeholder="-"></div>
+                <div class="col-6 mb-3"><label class="form-label">Persamaan 1</label><input type="text" class="form-control" id="mPersamaan1" placeholder="-"></div>
+                <div class="col-6 mb-3"><label class="form-label">Persamaan 2</label><input type="text" class="form-control" id="mPersamaan2" placeholder="-"></div>
               </div>
               <div class="row">
-                <div class="col-md-6 mb-2"><label class="form-label">Satuan</label><input type="text" class="form-control" id="mSatuan" placeholder="pcs / ltr" required></div>
-                <div class="col-md-6 mb-2"><label class="form-label">Harga Awal</label><input type="text" class="form-control" id="mHarga" value="Rp 0" required></div>
+                <div class="col-6 mb-3"><label class="form-label">Satuan</label><input type="text" class="form-control" id="mSatuan" placeholder="pcs" required></div>
+                <div class="col-6 mb-3"><label class="form-label">Harga Awal</label><input type="text" class="form-control" id="mHarga" value="Rp 0" required></div>
               </div>
-              <div class="mb-2"><label class="form-label">Stok Awal Fisik (Opsional)</label><input type="number" class="form-control" id="mStock" value="0" min="0"></div>
+              <div class="mb-2"><label class="form-label">Stok Awal Fisik</label><input type="number" class="form-control" id="mStock" value="0" min="0"></div>
             </div>
-            <div class="modal-footer border-secondary">
-              <button type="submit" class="btn btn-primary w-100">Daftarkan Suku Cadang</button>
+            <div class="modal-footer">
+              <button type="submit" class="btn btn-apple-primary w-100">Daftarkan Suku Cadang</button>
             </div>
           </form>
         </div>
       </div>
     </div>
 
-    <!-- MODAL: INPUT BARANG MASUK (RESTOCK VENDOR) -->
+    <!-- MODAL: INPUT INVENTORY IN (RESTOCK) -->
     <div class="modal fade" id="modalBarangMasuk" tabindex="-1">
       <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content" style="background: var(--card-bg); border: 1px solid #2e304e;">
+        <div class="modal-content">
           <form id="formBarangMasuk" autocomplete="off">
-            <div class="modal-header border-secondary">
-              <h5 class="modal-title text-success"><i class="fa fa-truck-loading"></i> Catat Logistik Masuk</h5>
+            <div class="modal-header">
+              <h5 class="modal-title"><i class="fa fa-truck-loading text-success"></i> Catat Logistik Masuk</h5>
               <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
               <div class="row">
-                <div class="col-md-6 mb-2"><label class="form-label">Tanggal Beli</label><input type="date" class="form-control" id="bmDate" required></div>
-                <div class="col-md-6 mb-2"><label class="form-label">Item ID</label><input type="text" class="form-control" id="bmItemId" placeholder="Ketik Item ID..." list="itemIdSuggest" required></div>
+                <div class="col-6 mb-3"><label class="form-label">Tanggal Beli</label><input type="date" class="form-control" id="bmDate" required></div>
+                <div class="col-6 mb-3"><label class="form-label">Item ID</label><input type="text" class="form-control" id="bmItemId" placeholder="Cari Item ID..." list="itemIdSuggest" required></div>
               </div>
-              <div class="mb-2"><label class="form-label">Nama Item</label><input type="text" class="form-control" id="bmItem" required></div>
+              <div class="mb-3"><label class="form-label">Nama Item</label><input type="text" class="form-control" id="bmItem" required></div>
               <div class="row">
-                <div class="col-md-6 mb-2"><label class="form-label">Part No</label><input type="text" class="form-control" id="bmPartNo" required></div>
-                <div class="col-md-6 mb-2"><label class="form-label">Merk / Brand</label><input type="text" class="form-control" id="bmMerk" placeholder="OEM / Genuine"></div>
+                <div class="col-6 mb-3"><label class="form-label">Part No</label><input type="text" class="form-control" id="bmPartNo" required></div>
+                <div class="col-6 mb-3"><label class="form-label">Merk / Brand</label><input type="text" class="form-control" id="bmMerk" placeholder="Genuine"></div>
               </div>
-              <div class="mb-2"><label class="form-label">Vendor / Supplier</label><input type="text" class="form-control" id="bmVendor" required></div>
+              <div class="mb-3"><label class="form-label">Vendor / Supplier</label><input type="text" class="form-control" id="bmVendor" required></div>
               <div class="row">
-                <div class="col-md-4 mb-2"><label class="form-label">Qty</label><input type="number" class="form-control" id="bmQty" value="1" min="1" required></div>
-                <div class="col-md-4 mb-2"><label class="form-label">Satuan</label><input type="text" class="form-control" id="bmSatuan" placeholder="pcs" required></div>
-                <div class="col-md-4 mb-2"><label class="form-label">Kategori</label><input type="text" class="form-control" id="bmKategori" placeholder="Filter"></div>
+                <div class="col-4 mb-3"><label class="form-label">Qty</label><input type="number" class="form-control" id="bmQty" value="1" min="1" required></div>
+                <div class="col-4 mb-3"><label class="form-label">Satuan</label><input type="text" class="form-control" id="bmSatuan" placeholder="pcs" required></div>
+                <div class="col-4 mb-3"><label class="form-label">Kategori</label><input type="text" class="form-control" id="bmKategori" placeholder="Filter"></div>
               </div>
               <div class="mb-2"><label class="form-label">Harga Satuan</label><input type="text" class="form-control" id="bmPrice" value="Rp 0" required></div>
             </div>
-            <div class="modal-footer border-secondary">
-              <button type="submit" class="btn btn-success w-100">Simpan Log Masuk & Sinkronisasi Stok</button>
+            <div class="modal-footer">
+              <button type="submit" class="btn btn-apple-success w-100">Simpan Log Masuk & Sinkronisasi</button>
             </div>
           </form>
         </div>
@@ -196,65 +160,65 @@
     <!-- MODAL MASTER CONTROL: FORM INPUT & CLOSE WORK ORDER -->
     <div class="modal fade" id="modalFormWO" tabindex="-1">
       <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content" style="background: var(--card-bg); border: 1px solid #2e304e;">
+        <div class="modal-content">
           <form id="mainWOForm" autocomplete="off">
-            <div class="modal-header border-secondary">
+            <div class="modal-header">
               <h5 class="modal-title" id="modalWOTitle">Form Input Operasional WO</h5>
               <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body" style="max-height: 75vh; overflow-y: auto;">
+            <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
               <div class="row">
-                <div class="col-md-4 mb-2"><label class="form-label">No WO</label><input type="text" class="form-control" id="inNoWo" required></div>
-                <div class="col-md-4 mb-2"><label class="form-label">Tanggal</label><input type="date" class="form-control" id="inTanggal" required></div>
-                <div class="col-md-4 mb-2"><label class="form-label">Unit/CN</label><input type="text" class="form-control" id="inUnit" required></div>
+                <div class="col-md-4 mb-3"><label class="form-label">No WO</label><input type="text" class="form-control" id="inNoWo" required></div>
+                <div class="col-md-4 mb-3"><label class="form-label">Tanggal</label><input type="date" class="form-control" id="inTanggal" required></div>
+                <div class="col-md-4 mb-3"><label class="form-label">Unit/CN</label><input type="text" class="form-control" id="inUnit" required></div>
               </div>
               <div class="row">
-                <div class="col-md-4 mb-2"><label class="form-label">Type Unit</label><input type="text" class="form-control" id="inType" required></div>
-                <div class="col-md-4 mb-2"><label class="form-label">Komponen</label><input type="text" class="form-control" id="inKomponen" required></div>
-                <div class="col-md-4 mb-2"><label class="form-label">Sub Komponen</label><input type="text" class="form-control" id="inSubKomponen"></div>
+                <div class="col-md-4 mb-3"><label class="form-label">Type Unit</label><input type="text" class="form-control" id="inType" required></div>
+                <div class="col-md-4 mb-3"><label class="form-label">Komponen</label><input type="text" class="form-control" id="inKomponen" required></div>
+                <div class="col-md-4 mb-3"><label class="form-label">Sub Komponen</label><input type="text" class="form-control" id="inSubKomponen"></div>
               </div>
-              <div class="mb-2"><label class="form-label">Deskripsi Kerusakan Awal</label><textarea class="form-control" id="inDeskripsi" rows="2" required></textarea></div>
+              <div class="mb-3"><label class="form-label">Deskripsi Kerusakan Awal</label><textarea class="form-control" id="inDeskripsi" rows="2" required></textarea></div>
               <div class="row">
-                <div class="col-md-6 mb-2"><label class="form-label">Jam Mulai Breakdown</label><input type="time" class="form-control" id="inJamMulai" required></div>
-                <div class="col-md-6 mb-2"><label class="form-label">Status Breakdown Case</label><select class="form-select" id="inStatusBD"><option value="Breakdown">Breakdown</option><option value="RFU">RFU</option></select></div>
+                <div class="col-md-6 mb-3"><label class="form-label">Jam Mulai Breakdown</label><input type="time" class="form-control" id="inJamMulai" required></div>
+                <div class="col-md-6 mb-3"><label class="form-label">Status Breakdown Case</label><select class="form-select" id="inStatusBD"><option value="Breakdown">Breakdown</option><option value="RFU">RFU</option></select></div>
               </div>
               
-              <!-- BLOK EXTRA UNTUK CLOSE TRANS-WO -->
-              <div id="closeWOPanel" class="p-3 my-3 border border-secondary rounded bg-dark d-none">
+              <!-- CLOSING WORK ORDER SUB PANEL -->
+              <div id="closeWOPanel" class="p-3 my-3 rounded d-none" style="background: rgba(0,0,0,0.2); border: 0.5px solid var(--ios-border);">
                 <h6 class="text-warning mb-3"><i class="fa fa-wrench"></i> Formulir Penutupan Kasus (Close RFU)</h6>
                 <div class="row">
-                  <div class="col-md-6 mb-2"><label class="form-label">Jam Selesai Perbaikan</label><input type="time" class="form-control" id="inJamSelesai"></div>
-                  <div class="col-md-6 mb-2"><label class="form-label">Status Hasil Pekerjaan</label><select class="form-select" id="inStatusKerja"><option value="Belum Selesai">Belum Selesai</option><option value="Selesai">Selesai (RFU)</option></select></div>
+                  <div class="col-md-6 mb-3"><label class="form-label">Jam Selesai Perbaikan</label><input type="time" class="form-control" id="inJamSelesai"></div>
+                  <div class="col-md-6 mb-3"><label class="form-label">Status Hasil Pekerjaan</label><select class="form-select" id="inStatusKerja"><option value="Belum Selesai">Belum Selesai</option><option value="Selesai">Selesai (RFU)</option></select></div>
                 </div>
-                <div class="mb-2"><label class="form-label">Deskripsi Tindakan Lapangan</label><textarea class="form-control" id="inDescKerja" rows="2"></textarea></div>
-                <div class="mb-3"><label class="form-label">Manpower (Gunakan Koma)</label><input type="text" class="form-control" id="inManpower" placeholder="Budi, Joko, Andi"></div>
+                <div class="mb-3"><label class="form-label">Deskripsi Tindakan Lapangan</label><textarea class="form-control" id="inDescKerja" rows="2"></textarea></div>
+                <div class="mb-3"><label class="form-label">Manpower (Pisahkan dengan Koma)</label><input type="text" class="form-control" id="inManpower" placeholder="Budi, Joko"></div>
                 
-                <!-- SUB-FORM MATERIAL / SPAREPART INSTALASI -->
-                <div class="border border-secondary p-2 rounded bg-secondary-subtle">
+                <!-- INNER PANEL SPHAREPART CONSUMPTION -->
+                <div class="p-3 rounded" style="background: var(--ios-card); border: 0.5px solid var(--ios-border);">
                   <span class="d-block small text-info fw-bold mb-2">Input Suku Cadang Terpakai (Part Instal)</span>
                   <div class="row g-2">
-                    <div class="col-md-3"><input type="text" class="form-control form-control-sm" id="matItemId" list="itemIdSuggest" placeholder="Item ID"></div>
+                    <div class="col-md-3"><input type="text" class="form-control form-control-sm" id="matItemId" list="itemIdSuggest" placeholder="Cari Item ID..."></div>
                     <div class="col-md-3"><input type="text" class="form-control form-control-sm" id="matNama" placeholder="Nama Barang"></div>
                     <div class="col-md-3"><input type="text" class="form-control form-control-sm" id="matPartNo" placeholder="Part No"></div>
                     <div class="col-md-1"><input type="number" class="form-control form-control-sm" id="matQty" value="1" min="1"></div>
                     <div class="col-md-2"><input type="text" class="form-control form-control-sm" id="matSatuan" placeholder="pcs"></div>
                   </div>
-                  <div class="row g-2 mt-1">
+                  <div class="row g-2 mt-2">
                     <div class="col-md-4"><input type="text" class="form-control form-control-sm" id="matHarga" value="Rp 0"></div>
                     <div class="col-md-4"><select class="form-select form-select-sm" id="matStatusMat"><option value="Terinstal">Terinstal</option><option value="Booking">Booking</option></select></div>
-                    <div class="col-md-4"><button type="button" class="btn btn-info btn-sm w-100 fw-bold" id="btnAddMaterial">Pasang Part</button></div>
+                    <div class="col-md-4"><button type="button" class="btn btn-info btn-sm w-100 fw-bold text-white" id="btnAddMaterial">Pasang Part</button></div>
                   </div>
-                  <div class="table-responsive mt-2">
-                    <table class="table table-dark table-sm small m-0">
-                      <thead><tr><th>Item ID</th><th>Nama Barang</th><th>Part No</th><th>Qty</th><th>Harga</th><th>Status</th><th>Aksi</th></tr></thead>
+                  <div class="table-responsive mt-3">
+                    <table class="table table-dark table-sm small mb-0">
+                      <thead><tr><th>Item ID</th><th>Nama Barang</th><th>Part No</th><th>Qty</th><th>Harga</th><th>Status</th><th class="text-center">Aksi</th></tr></thead>
                       <tbody id="materialListTableBody"></tbody>
                     </table>
                   </div>
                 </div>
               </div>
             </div>
-            <div class="modal-footer border-secondary">
-              <button type="submit" class="btn btn-main w-100" id="btnSubmitWO">Simpan Data Transaksi</button>
+            <div class="modal-footer">
+              <button type="submit" class="btn btn-apple-primary w-100" id="btnSubmitWO">Simpan Data Transaksi</button>
             </div>
           </form>
         </div>
@@ -262,65 +226,63 @@
     </div>
   </div>
 
+  <!-- SUGGESTION LIST SYSTEM FOR AUTOCOMPLETE -->
   <datalist id="itemIdSuggest"></datalist>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    const SCRIPT_WEB_URL = "https://script.google.com/macros/s/AKfycbw-8Np1rneYt0k3UXnZz25Asqn4oHYih42_GMRHbiTYaMlwmKGe3oXo9j4e4dvkODlkWw/exec";
     let woData = [];
     let dbBarangData = [];
     let currentMaterials = [];
     let isEditMode = false;
     let modalWOObj = null;
 
-    window.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', () => {
       modalWOObj = new bootstrap.Modal(document.getElementById('modalFormWO'));
-      fetchSpreadsheetData();
-      fetchInventoryData();
+      
+      // Load Data Awal Saat Aplikasi Terbuka
+      refreshAllData();
 
-      // Tombol Buat WO Baru
+      // Masking Format Rupiah secara Live untuk input harga
+      setupRupiahMasking('mHarga');
+      setupRupiahMasking('bmPrice');
+      setupRupiahMasking('matHarga');
+
+      // Handler Tombol Munculkan Form WO Baru
       document.getElementById('btnShowFormWO').addEventListener('click', () => {
         isEditMode = false;
         document.getElementById('modalWOTitle').innerText = "Buat Transaksi WO Baru";
         document.getElementById('mainWOForm').reset();
         
-        // Membuka akses input yang tadinya dinonaktifkan saat mode Close
-        document.getElementById('inNoWo').removeAttribute('readonly');
-        document.getElementById('inTanggal').removeAttribute('readonly');
-        document.getElementById('inUnit').removeAttribute('readonly');
-        document.getElementById('inType').removeAttribute('readonly');
-        document.getElementById('inKomponen').removeAttribute('readonly');
-        document.getElementById('inSubKomponen').removeAttribute('readonly');
-        document.getElementById('inDeskripsi').removeAttribute('readonly');
-        document.getElementById('inJamMulai').removeAttribute('readonly');
-        document.getElementById('inStatusBD').removeAttribute('disabled');
-
+        // Membuka kunci input fields
+        toggleWOFields(false);
+        
         currentMaterials = [];
         renderMaterialSubTable();
         document.getElementById('closeWOPanel').classList.add('d-none');
         modalWOObj.show();
       });
 
-      // Tombol Tambah Material Ke Tabel Sementara
+      // Handler Tambah Item Suku Cadang ke Tabel Sementara (Form WO)
       document.getElementById('btnAddMaterial').addEventListener('click', (e) => {
         e.preventDefault(); 
-        const itemId = document.getElementById('matItemId').value;
-        const nama = document.getElementById('matNama').value;
-        const partNo = document.getElementById('matPartNo').value;
+        const itemId = document.getElementById('matItemId').value.trim();
+        const nama = document.getElementById('matNama').value.trim();
+        const partNo = document.getElementById('matPartNo').value.trim();
         const qty = Number(document.getElementById('matQty').value) || 1;
         const harga = parseRupiah(document.getElementById('matHarga').value);
         const statusMat = document.getElementById('matStatusMat').value;
-        const satuan = document.getElementById('matSatuan').value || "pcs";
+        const satuan = document.getElementById('matSatuan').value.trim() || "pcs";
 
         if(!nama) {
-          alert("Nama barang wajib diisi!");
+          alert("Nama Suku cadang wajib terisi!");
           return;
         }
 
         currentMaterials.push({ itemId, nama, partNo, qty, harga, statusMat, satuan });
         renderMaterialSubTable();
 
-        // Reset sub form
+        // Reset Sub Form Input Suku Cadang
         document.getElementById('matItemId').value = '';
         document.getElementById('matNama').value = '';
         document.getElementById('matPartNo').value = '';
@@ -330,9 +292,9 @@
         document.getElementById('matStatusMat').selectedIndex = 0;
       });
 
-      // Autofill nama item saat Item ID logistik dipilih/diketik
+      // Autofill Sugesti untuk Modul Logistik Barang Masuk
       document.getElementById('bmItemId').addEventListener('input', function() {
-        const match = dbBarangData.find(i => i["Item ID"] === this.value);
+        const match = dbBarangData.find(i => String(i["Item ID"]).trim() === this.value.trim());
         if(match) {
           document.getElementById('bmItem').value = match["Item"] || "";
           document.getElementById('bmPartNo').value = match["Part-No"] || match["Part No"] || "";
@@ -342,9 +304,9 @@
         }
       });
 
-      // Autofill nama item saat Item ID material di Form WO dipilih/diketik
+      // Autofill Sugesti untuk Suku Cadang Terpakai di Form WO
       document.getElementById('matItemId').addEventListener('input', function() {
-        const match = dbBarangData.find(i => i["Item ID"] === this.value);
+        const match = dbBarangData.find(i => String(i["Item ID"]).trim() === this.value.trim());
         if(match) {
           document.getElementById('matNama').value = match["Item"] || "";
           document.getElementById('matPartNo').value = match["Part-No"] || match["Part No"] || "";
@@ -353,10 +315,10 @@
         }
       });
 
-      // Submit Form Utama WO (Create maupun Close)
-      document.getElementById('mainWOForm').addEventListener('submit', async function(e){
+      // Submit Form WO Baru ATAU Close Kasus WO
+      document.getElementById('mainWOForm').addEventListener('submit', function(e){
         e.preventDefault();
-        showLoading(true, "Menyimpan Data Transaksi WO...");
+        showLoading(true, "Sinkronisasi Server Transaksi...");
 
         let payload = {
           nowo: document.getElementById('inNoWo').value,
@@ -376,29 +338,33 @@
           materialArr: currentMaterials
         };
 
-        // Jika mode penutupan paksa status BD di-overwrite menjadi RFU jika statusKerja Selesai
         if(isEditMode && payload.statusKerja === "Selesai") {
           payload.status = "RFU";
         }
 
-        let action = isEditMode ? "close" : "create";
-        let ok = await sendToSpreadsheet(action, payload);
-
-        if(ok){
-          alert("Transaksi WO Berhasil Diperbarui!");
-          modalWOObj.hide();
-          document.getElementById('mainWOForm').reset();
-          currentMaterials = [];
-          fetchSpreadsheetData();
-          fetchInventoryData();
-        } else {
-          alert("Gagal menyimpan data ke server.");
-        }
-        showLoading(false);
+        let actionType = isEditMode ? "close" : "create";
+        
+        // Menggunakan google.script.run yang merupakan native & bergaransi bekerja di Apps Script Environment
+        google.script.run.withSuccessHandler(function(response) {
+          showLoading(false);
+          let resParsed = JSON.parse(response);
+          if (resParsed.status === "success") {
+            alert("Data Transaksi WO Berhasil Diperbarui!");
+            modalWOObj.hide();
+            document.getElementById('mainWOForm').reset();
+            currentMaterials = [];
+            refreshAllData();
+          } else {
+            alert("Error: " + resParsed.message);
+          }
+        }).withFailureHandler(function(err) {
+          showLoading(false);
+          alert("Gagal koneksi ke server script: " + err);
+        }).doPost({postData: {contents: JSON.stringify({action: actionType, data: payload})}});
       });
 
-      // Submit Master Barang Baru
-      document.getElementById('formMasterBarangBaru').addEventListener('submit', async (e) => {
+      // Submit Mendaftarkan Item Baru ke Master
+      document.getElementById('formMasterBarangBaru').addEventListener('submit', function(e) {
         e.preventDefault();
         showLoading(true, "Mendaftarkan Item Baru...");
         
@@ -414,20 +380,22 @@
           harga: parseRupiah(document.getElementById('mHarga').value)
         };
 
-        let ok = await sendToSpreadsheet("add_new_item", payload);
-        if(ok) {
-          alert("Berhasil mendaftarkan item baru!");
-          bootstrap.Modal.getInstance(document.getElementById('modalMasterBarangBaru')).hide();
-          document.getElementById('formMasterBarangBaru').reset();
-          fetchInventoryData();
-        } else {
-          alert("Gagal menyimpan item baru.");
-        }
-        showLoading(false);
+        google.script.run.withSuccessHandler(function(response) {
+          showLoading(false);
+          let res = JSON.parse(response);
+          if(res.status === "success") {
+            alert("Berhasil mendaftarkan item baru!");
+            bootstrap.Modal.getInstance(document.getElementById('modalMasterBarangBaru')).hide();
+            document.getElementById('formMasterBarangBaru').reset();
+            refreshAllData();
+          } else {
+            alert("Error: " + res.message);
+          }
+        }).doPost({postData: {contents: JSON.stringify({action: "add_new_item", data: payload})}});
       });
 
-      // Submit Restock Barang Masuk
-      document.getElementById('formBarangMasuk').addEventListener('submit', async (e) => {
+      // Submit Log Transaksi Barang Masuk (Restock)
+      document.getElementById('formBarangMasuk').addEventListener('submit', function(e) {
         e.preventDefault();
         showLoading(true, "Memproses Restock Logistik...");
         
@@ -444,58 +412,58 @@
           price: parseRupiah(document.getElementById('bmPrice').value)
         };
 
-        let ok = await sendToSpreadsheet("restock_inventory", payload);
-        if(ok) {
-          alert("Stok barang berhasil ditambahkan!");
-          bootstrap.Modal.getInstance(document.getElementById('modalBarangMasuk')).hide();
-          document.getElementById('formBarangMasuk').reset();
-          fetchInventoryData();
-        } else {
-          alert("Gagal memproses transaksi restock.");
-        }
-        showLoading(false);
+        google.script.run.withSuccessHandler(function(response) {
+          showLoading(false);
+          let res = JSON.parse(response);
+          if(res.status === "success") {
+            alert("Stok barang berhasil ditambahkan!");
+            bootstrap.Modal.getInstance(document.getElementById('modalBarangMasuk')).hide();
+            document.getElementById('formBarangMasuk').reset();
+            refreshAllData();
+          } else {
+            alert("Error: " + res.message);
+          }
+        }).doPost({postData: {contents: JSON.stringify({action: "restock_inventory", data: payload})}});
       });
     });
 
     /* =========================
-       FETCH DATA
+       ENGINE INTERNAL CORE INTERACTION
     ========================= */
-    async function fetchSpreadsheetData() {
-      try {
-        let res = await fetch(SCRIPT_WEB_URL, {
-          method: "POST",
-          headers: { "Content-Type": "text/plain" },
-          body: JSON.stringify({ action: "read_wo" })
-        });
-        let json = await res.json();
-        if(json.status === "success") {
-          woData = json.data || [];
+    function refreshAllData() {
+      showLoading(true, "Sinkronisasi Database...");
+      
+      // Ambil data WO & Data Inventory secara Paralel menggunakan Native API
+      google.script.run.withSuccessHandler(function(responseWO) {
+        let resWO = JSON.parse(responseWO);
+        if(resWO.status === "success") {
+          woData = resWO.data || [];
           renderWOTables();
         }
-      } catch(err) {
-        console.error("WO Fetch Error:", err);
-      }
+        
+        google.script.run.withSuccessHandler(function(responseInv) {
+          showLoading(false);
+          let resInv = JSON.parse(responseInv);
+          if(resInv.status === "success") {
+            dbBarangData = resInv.data || [];
+            renderInventoryTable(dbBarangData);
+          }
+        }).doPost({postData: {contents: JSON.stringify({action: "read_inventory"})}});
+
+      }).doPost({postData: {contents: JSON.stringify({action: "read_wo"})}});
     }
 
-    async function fetchInventoryData() {
-      try {
-        let res = await fetch(SCRIPT_WEB_URL, {
-          method: "POST",
-          headers: { "Content-Type": "text/plain" },
-          body: JSON.stringify({ action: "read_inventory" })
-        });
-        let json = await res.json();
-        if(json.status === "success") {
-          dbBarangData = json.data || [];
-          renderInventoryTable(dbBarangData);
-        }
-      } catch(err) {
-        console.error("Inventory Fetch Error:", err);
-      }
+    function toggleWOFields(disable) {
+      const fields = ['inNoWo', 'inTanggal', 'inUnit', 'inType', 'inKomponen', 'inSubKomponen', 'inDeskripsi', 'inJamMulai'];
+      fields.forEach(f => {
+        if(disable) document.getElementById(f).setAttribute('readonly', true);
+        else document.getElementById(f).removeAttribute('readonly');
+      });
+      document.getElementById('inStatusBD').disabled = disable;
     }
 
     /* =========================
-       RENDERERS
+       DOM RENDER MANAGEMENT
     ========================= */
     function renderInventoryTable(data) {
       const tbody = document.getElementById("dbBarangTableBody");
@@ -543,22 +511,22 @@
         if(wo.status !== "RFU") {
           openHTML += `
             <tr>
-              <td>${wo.nowo}</td>
+              <td class="fw-bold text-primary">${wo.nowo}</td>
               <td>${wo.tanggal}</td>
-              <td>${wo.unit}</td>
+              <td><span class="badge bg-secondary">${wo.unit}</span></td>
               <td>${wo.type}</td>
               <td>${wo.komponen}</td>
               <td>${wo.deskripsi}</td>
               <td>${wo.jamMulai}</td>
-              <td>
-                <button class="btn btn-success btn-sm" onclick="openFormClose('${wo.nowo}')">Close</button>
+              <td class="text-center">
+                <button class="btn btn-apple-success btn-sm px-3" onclick="openFormClose('${wo.nowo}')">Close</button>
               </td>
             </tr>`;
         } else {
           closeHTML += `
             <tr>
-              <td>${wo.nowo}</td>
-              <td>${wo.unit}</td>
+              <td class="text-muted">${wo.nowo}</td>
+              <td><span class="badge bg-secondary">${wo.unit}</span></td>
               <td>${wo.komponen}</td>
               <td>${wo.jamSelesai || '-'}</td>
               <td>${wo.durasiMenit || '-'}</td>
@@ -568,15 +536,15 @@
         }
       });
 
-      openT.innerHTML = openHTML || `<tr><td colspan="8" class="text-center">Tidak ada penanganan open</td></tr>`;
-      closeT.innerHTML = closeHTML || `<tr><td colspan="7" class="text-center">Riwayat kosong</td></tr>`;
+      openT.innerHTML = openHTML || `<tr><td colspan="8" class="text-center text-muted">Tidak ada penanganan open</td></tr>`;
+      closeT.innerHTML = closeHTML || `<tr><td colspan="7" class="text-center text-muted">Riwayat kosong</td></tr>`;
     }
 
     function renderMaterialSubTable() {
       const tbody = document.getElementById('materialListTableBody');
       if (!tbody) return;
       if (currentMaterials.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted">Belum ada part dimasukkan</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-2">Belum ada part dimasukkan</td></tr>`;
         return;
       }
       tbody.innerHTML = currentMaterials.map((mat, idx) => `
@@ -586,9 +554,9 @@
           <td>${mat.partNo || '-'}</td>
           <td>${mat.qty}</td>
           <td>${formatRupiah(mat.harga)}</td>
-          <td>${mat.statusMat}</td>
-          <td>
-            <button type="button" class="btn btn-danger btn-sm" onclick="removeMaterial(${idx})"><i class="fa fa-trash"></i></button>
+          <td><span class="badge bg-secondary">${mat.statusMat}</span></td>
+          <td class="text-center">
+            <button type="button" class="btn btn-apple-danger btn-sm px-2 py-1" onclick="removeMaterial(${idx})"><i class="fa fa-trash"></i></button>
           </td>
         </tr>
       `).join("");
@@ -606,26 +574,19 @@
 
       document.getElementById('modalWOTitle').innerText = "Form Penutupan Kasus WO: " + nowo;
       
-      // Load data awal breakdown ke form agar user tahu detail unitnya
+      // Load data awal breakdown ke form
       document.getElementById('inNoWo').value = wo.nowo;
-      document.getElementById('inNoWo').setAttribute('readonly', true);
       document.getElementById('inTanggal').value = wo.tanggal;
-      document.getElementById('inTanggal').setAttribute('readonly', true);
       document.getElementById('inUnit').value = wo.unit;
-      document.getElementById('inUnit').setAttribute('readonly', true);
       document.getElementById('inType').value = wo.type;
-      document.getElementById('inType').setAttribute('readonly', true);
       document.getElementById('inKomponen').value = wo.komponen;
-      document.getElementById('inKomponen').setAttribute('readonly', true);
       document.getElementById('inSubKomponen').value = wo.subkomponen || "";
-      document.getElementById('inSubKomponen').setAttribute('readonly', true);
       document.getElementById('inDeskripsi').value = wo.deskripsi;
-      document.getElementById('inDeskripsi').setAttribute('readonly', true);
       document.getElementById('inJamMulai').value = wo.jamMulai;
-      document.getElementById('inJamMulai').setAttribute('readonly', true);
-      
       document.getElementById('inStatusBD').value = "RFU";
-      document.getElementById('inStatusBD').setAttribute('disabled', true);
+      
+      // Kunci data utama agar user fokus mengisi formulir closing
+      toggleWOFields(true);
 
       // Munculkan formulir close out
       currentMaterials = [];
@@ -635,7 +596,7 @@
     };
 
     /* =========================
-       UTILITIES & CONNECTOR
+       HELPER SYSTEM UTILITIES
     ========================= */
     window.switchTab = function(tabName) {
       const menuWo = document.getElementById('menu-plant');
@@ -648,13 +609,11 @@
         menuInv.classList.remove('active');
         contentWo.classList.remove('d-none');
         contentInv.classList.add('d-none');
-        fetchSpreadsheetData();
       } else {
         menuWo.classList.remove('active');
         menuInv.classList.add('active');
         contentWo.classList.add('d-none');
         contentInv.classList.remove('d-none');
-        fetchInventoryData();
       }
     };
 
@@ -673,19 +632,19 @@
       return Number(String(str).replace(/[^0-9]/g,'')) || 0;
     }
 
-    async function sendToSpreadsheet(action, data) {
-      try {
-        let res = await fetch(SCRIPT_WEB_URL, {
-          method: "POST",
-          headers: { "Content-Type": "text/plain" },
-          body: JSON.stringify({action, data})
-        });
-        let json = await res.json();
-        return json.status === "success";
-      } catch(err) {
-        console.error(err);
-        return false;
-      }
+    function setupRupiahMasking(id) {
+      const input = document.getElementById(id);
+      if(!input) return;
+      input.addEventListener('input', function() {
+        let val = parseRupiah(this.value);
+        this.value = formatRupiah(val);
+      });
+      input.addEventListener('focus', function() {
+        if(this.value === 'Rp 0') this.value = '';
+      });
+      input.addEventListener('blur', function() {
+        if(this.value === '') this.value = 'Rp 0';
+      });
     }
   </script>
 </body>
