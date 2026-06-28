@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>PLANT - WO & Inventory Management</title>
+  <title>PLANT - Management</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link href="https://fonts.googleapis.com/css?family=Montserrat:700,400&display=swap" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
@@ -46,7 +46,6 @@
 </head>
 <body>
 
-  <!-- FIXED: Menambahkan class d-none agar loading screen tersembunyi secara default saat awal muat -->
   <div class="loading-overlay d-none" id="loadingOverlay">
     <div class="spinner"></div>
     <div class="fw-bold text-light" id="loadingText">Sinkronisasi Server Tambang...</div>
@@ -68,7 +67,7 @@
     <div id="plant-wo-content">
       <div class="dashboard-title d-flex justify-content-between align-items-center">
         <span>Monitoring & Penanganan Work Order</span>
-        <button class="btn btn-main" id="btnShowFormWO" data-bs-toggle="modal" data-bs-target="#modalFormWO"><i class="fa fa-plus"></i> Buat WO Baru</button>
+        <button class="btn btn-main" id="btnShowFormWO"><i class="fa fa-plus"></i> Buat WO Baru</button>
       </div>
 
       <div class="section-title text-danger"><i class="fa fa-folder-open"></i> OPEN Breakdown</div>
@@ -118,7 +117,6 @@
               <th>Physical Stock</th>
               <th>Available Stock</th>
               <th>Harga Update</th>
-              <th>Aksi</th>
             </tr>
           </thead>
           <tbody id="dbBarangTableBody"></tbody>
@@ -126,7 +124,7 @@
       </div>
     </div>
 
-    <!-- MODAL BARU: TAMBAH MASTER BARANG BARU -->
+    <!-- MODAL: TAMBAH MASTER BARANG BARU -->
     <div class="modal fade" id="modalMasterBarangBaru" tabindex="-1">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content" style="background: var(--card-bg); border: 1px solid #2e304e;">
@@ -160,40 +158,6 @@
       </div>
     </div>
 
-    <!-- MODAL: EDIT MASTER BARANG -->
-    <div class="modal fade" id="modalEditBarang" tabindex="-1">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content" style="background: var(--card-bg); border: 1px solid #2e304e;">
-          <form id="formEditBarang" autocomplete="off">
-            <div class="modal-header border-secondary">
-              <h5 class="modal-title text-warning"><i class="fa fa-edit"></i> Edit Master Suku Cadang</h5>
-              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-              <div class="row">
-                <!-- FIXED: Mengganti atribut typo 'only' dengan 'readonly' -->
-                <div class="col-md-6 mb-2"><label class="form-label">Item ID (Tidak bisa diubah)</label><input type="text" class="form-control" id="eItemId" readonly></div>
-                <div class="col-md-6 mb-2"><label class="form-label">Kategori</label><input type="text" class="form-control" id="eKategori" required></div>
-              </div>
-              <div class="mb-2"><label class="form-label">Nama Barang</label><input type="text" class="form-control" id="eItem" required></div>
-              <div class="mb-2"><label class="form-label">Part No</label><input type="text" class="form-control" id="ePartNo" required></div>
-              <div class="row">
-                <div class="col-md-6 mb-2"><label class="form-label">Persamaan 1</label><input type="text" class="form-control" id="ePersamaan1"></div>
-                <div class="col-md-6 mb-2"><label class="form-label">Persamaan 2</label><input type="text" class="form-control" id="ePersamaan2"></div>
-              </div>
-              <div class="row">
-                <div class="col-md-6 mb-2"><label class="form-label">Satuan</label><input type="text" class="form-control" id="eSatuan" required></div>
-                <div class="col-md-6 mb-2"><label class="form-label">Harga Update</label><input type="text" class="form-control" id="eHarga" required></div>
-              </div>
-            </div>
-            <div class="modal-footer border-secondary">
-              <button type="submit" class="btn btn-warning w-100 fw-bold">Update Master Item</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-
     <!-- MODAL: INPUT BARANG MASUK (RESTOCK VENDOR) -->
     <div class="modal fade" id="modalBarangMasuk" tabindex="-1">
       <div class="modal-dialog modal-dialog-centered">
@@ -206,7 +170,7 @@
             <div class="modal-body">
               <div class="row">
                 <div class="col-md-6 mb-2"><label class="form-label">Tanggal Beli</label><input type="date" class="form-control" id="bmDate" required></div>
-                <div class="col-md-6 mb-2"><label class="form-label">Item ID</label><input type="text" class="form-control" id="bmItemId" placeholder="Ketik Item ID..." list="itemList" required></div>
+                <div class="col-md-6 mb-2"><label class="form-label">Item ID</label><input type="text" class="form-control" id="bmItemId" placeholder="Ketik Item ID..." list="itemIdSuggest" required></div>
               </div>
               <div class="mb-2"><label class="form-label">Nama Item</label><input type="text" class="form-control" id="bmItem" required></div>
               <div class="row">
@@ -256,7 +220,7 @@
               </div>
               
               <!-- BLOK EXTRA UNTUK CLOSE TRANS-WO -->
-              <div id="closeWOPanel" class="p-3 my-3 border border-secondary rounded bg-dark">
+              <div id="closeWOPanel" class="p-3 my-3 border border-secondary rounded bg-dark d-none">
                 <h6 class="text-warning mb-3"><i class="fa fa-wrench"></i> Formulir Penutupan Kasus (Close RFU)</h6>
                 <div class="row">
                   <div class="col-md-6 mb-2"><label class="form-label">Jam Selesai Perbaikan</label><input type="time" class="form-control" id="inJamSelesai"></div>
@@ -276,7 +240,7 @@
                     <div class="col-md-2"><input type="text" class="form-control form-control-sm" id="matSatuan" placeholder="pcs"></div>
                   </div>
                   <div class="row g-2 mt-1">
-                    <div class="col-md-4"><input type="text" class="form-control form-control-sm" id="matHarga" placeholder="Harga Rp 0"></div>
+                    <div class="col-md-4"><input type="text" class="form-control form-control-sm" id="matHarga" value="Rp 0"></div>
                     <div class="col-md-4"><select class="form-select form-select-sm" id="matStatusMat"><option value="Terinstal">Terinstal</option><option value="Booking">Booking</option></select></div>
                     <div class="col-md-4"><button type="button" class="btn btn-info btn-sm w-100 fw-bold" id="btnAddMaterial">Pasang Part</button></div>
                   </div>
@@ -307,168 +271,371 @@
     let dbBarangData = [];
     let currentMaterials = [];
     let isEditMode = false;
+    let modalWOObj = null;
 
-    /* =========================
-       INIT
-    ========================= */
     window.addEventListener('DOMContentLoaded', () => {
+      modalWOObj = new bootstrap.Modal(document.getElementById('modalFormWO'));
       fetchSpreadsheetData();
       fetchInventoryData();
 
+      // Tombol Buat WO Baru
       document.getElementById('btnShowFormWO').addEventListener('click', () => {
         isEditMode = false;
         document.getElementById('modalWOTitle').innerText = "Buat Transaksi WO Baru";
         document.getElementById('mainWOForm').reset();
+        
+        // Membuka akses input yang tadinya dinonaktifkan saat mode Close
+        document.getElementById('inNoWo').removeAttribute('readonly');
+        document.getElementById('inTanggal').removeAttribute('readonly');
+        document.getElementById('inUnit').removeAttribute('readonly');
+        document.getElementById('inType').removeAttribute('readonly');
+        document.getElementById('inKomponen').removeAttribute('readonly');
+        document.getElementById('inSubKomponen').removeAttribute('readonly');
+        document.getElementById('inDeskripsi').removeAttribute('readonly');
+        document.getElementById('inJamMulai').removeAttribute('readonly');
+        document.getElementById('inStatusBD').removeAttribute('disabled');
+
         currentMaterials = [];
         renderMaterialSubTable();
         document.getElementById('closeWOPanel').classList.add('d-none');
+        modalWOObj.show();
       });
 
-     // FIXED: Menambahkan fungsionalitas tombol Add Material
-document.getElementById('btnAddMaterial').addEventListener('click', (e) => {
-  // Mencegah form melakukan submit/refresh halaman
-  e.preventDefault(); 
-  
-  const itemId = document.getElementById('matItemId').value;
-  const nama = document.getElementById('matNama').value;
-  const partNo = document.getElementById('matPartNo').value;
-  const qty = Number(document.getElementById('matQty').value) || 1;
-  const harga = parseRupiah(document.getElementById('matHarga').value);
-  const statusMat = document.getElementById('matStatusMat').value;
+      // Tombol Tambah Material Ke Tabel Sementara
+      document.getElementById('btnAddMaterial').addEventListener('click', (e) => {
+        e.preventDefault(); 
+        const itemId = document.getElementById('matItemId').value;
+        const nama = document.getElementById('matNama').value;
+        const partNo = document.getElementById('matPartNo').value;
+        const qty = Number(document.getElementById('matQty').value) || 1;
+        const harga = parseRupiah(document.getElementById('matHarga').value);
+        const statusMat = document.getElementById('matStatusMat').value;
+        const satuan = document.getElementById('matSatuan').value || "pcs";
 
-  if(!nama) {
-    alert("Nama barang wajib diisi!");
-    return;
-  }
+        if(!nama) {
+          alert("Nama barang wajib diisi!");
+          return;
+        }
 
-  // Tambahkan data ke array
-  currentMaterials.push({ itemId, nama, partNo, qty, harga, statusMat });
-  
-  // Render ulang tabel
-  renderMaterialSubTable();
+        currentMaterials.push({ itemId, nama, partNo, qty, harga, statusMat, satuan });
+        renderMaterialSubTable();
 
-  // Reset input sub-form
-  document.getElementById('matItemId').value = '';
-  document.getElementById('matNama').value = '';
-  document.getElementById('matPartNo').value = '';
-  document.getElementById('matQty').value = '1';
-  document.getElementById('matHarga').value = 'Rp 0';
-  document.getElementById('matStatusMat').selectedIndex = 0;
-});
+        // Reset sub form
+        document.getElementById('matItemId').value = '';
+        document.getElementById('matNama').value = '';
+        document.getElementById('matPartNo').value = '';
+        document.getElementById('matQty').value = '1';
+        document.getElementById('matHarga').value = 'Rp 0';
+        document.getElementById('matSatuan').value = '';
+        document.getElementById('matStatusMat').selectedIndex = 0;
+      });
 
-        /* ========================================================
-   EVENT LISTENERS UNTUK MENGHUBUNGKAN FORM KE GOOGLE SHEETS
-   ======================================================== */
+      // Autofill nama item saat Item ID logistik dipilih/diketik
+      document.getElementById('bmItemId').addEventListener('input', function() {
+        const match = dbBarangData.find(i => i["Item ID"] === this.value);
+        if(match) {
+          document.getElementById('bmItem').value = match["Item"] || "";
+          document.getElementById('bmPartNo').value = match["Part-No"] || match["Part No"] || "";
+          document.getElementById('bmSatuan').value = match["Satuan"] || "";
+          document.getElementById('bmKategori').value = match["Kategori"] || "";
+          document.getElementById('bmPrice').value = formatRupiah(match["HARGA UPDATE"] || 0);
+        }
+      });
 
-// 1. FORM TAMBAH MASTER BARANG BARU
-document.getElementById('formMasterBarangBaru').addEventListener('submit', async (e) => {
-  e.preventDefault(); // Mencegah halaman refresh
-  showLoading(true, "Mendaftarkan Item Baru...");
-  
-  let payload = {
-    itemId: document.getElementById('mItemId').value,
-    item: document.getElementById('mItem').value,
-    partNo: document.getElementById('mPartNo').value,
-    persamaan1: document.getElementById('mPersamaan1').value,
-    persamaan2: document.getElementById('mPersamaan2').value,
-    satuan: document.getElementById('mSatuan').value,
-    kategori: document.getElementById('mKategori').value,
-    stock: document.getElementById('mStock').value,
-    harga: parseRupiah(document.getElementById('mHarga').value)
-  };
+      // Autofill nama item saat Item ID material di Form WO dipilih/diketik
+      document.getElementById('matItemId').addEventListener('input', function() {
+        const match = dbBarangData.find(i => i["Item ID"] === this.value);
+        if(match) {
+          document.getElementById('matNama').value = match["Item"] || "";
+          document.getElementById('matPartNo').value = match["Part-No"] || match["Part No"] || "";
+          document.getElementById('matSatuan').value = match["Satuan"] || "";
+          document.getElementById('matHarga').value = formatRupiah(match["HARGA UPDATE"] || 0);
+        }
+      });
 
-  let ok = await sendToSpreadsheet("add_new_item", payload);
-  if(ok) {
-    alert("Berhasil mendaftarkan item!");
-    bootstrap.Modal.getInstance(document.getElementById('modalMasterBarangBaru')).hide();
-    document.getElementById('formMasterBarangBaru').reset();
-    fetchInventoryData(); // Refresh data tabel
-  } else {
-    alert("Gagal menyimpan data.");
-  }
-  showLoading(false);
-});
+      // Submit Form Utama WO (Create maupun Close)
+      document.getElementById('mainWOForm').addEventListener('submit', async function(e){
+        e.preventDefault();
+        showLoading(true, "Menyimpan Data Transaksi WO...");
 
-// 2. FORM INPUT BARANG MASUK (VENDOR)
-document.getElementById('formBarangMasuk').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  showLoading(true, "Memproses Restock...");
-  
-  let payload = {
-    date: document.getElementById('bmDate').value,
-    itemId: document.getElementById('bmItemId').value,
-    item: document.getElementById('bmItem').value,
-    partNo: document.getElementById('bmPartNo').value,
-    merk: document.getElementById('bmMerk').value,
-    vendor: document.getElementById('bmVendor').value,
-    qty: document.getElementById('bmQty').value,
-    satuan: document.getElementById('bmSatuan').value,
-    kategori: document.getElementById('bmKategori').value,
-    price: parseRupiah(document.getElementById('bmPrice').value)
-  };
+        let payload = {
+          nowo: document.getElementById('inNoWo').value,
+          tanggal: document.getElementById('inTanggal').value,
+          unit: document.getElementById('inUnit').value,
+          type: document.getElementById('inType').value,
+          komponen: document.getElementById('inKomponen').value,
+          subkomponen: document.getElementById('inSubKomponen').value,
+          deskripsi: document.getElementById('inDeskripsi').value,
+          jamMulai: document.getElementById('inJamMulai').value,
+          status: document.getElementById('inStatusBD').value,
+          
+          jamSelesai: document.getElementById('inJamSelesai').value || "",
+          statusKerja: document.getElementById('inStatusKerja').value || "Belum Selesai",
+          descKerja: document.getElementById('inDescKerja').value || "",
+          manpower: document.getElementById('inManpower').value || "",
+          materialArr: currentMaterials
+        };
 
-  let ok = await sendToSpreadsheet("restock_inventory", payload);
-  if(ok) {
-    alert("Barang berhasil masuk!");
-    bootstrap.Modal.getInstance(document.getElementById('modalBarangMasuk')).hide();
-    document.getElementById('formBarangMasuk').reset();
-    fetchInventoryData(); // Refresh data tabel
-  } else {
-    alert("Gagal memproses barang masuk.");
-  }
-  showLoading(false);
-});
+        // Jika mode penutupan paksa status BD di-overwrite menjadi RFU jika statusKerja Selesai
+        if(isEditMode && payload.statusKerja === "Selesai") {
+          payload.status = "RFU";
+        }
 
-      /* =========================
-   FUNGSI TAMBAH WO
-   ========================= */
-document.getElementById('mainWOForm').addEventListener('submit', async function(e){
-  e.preventDefault(); // Mencegah form melakukan reload halaman
+        let action = isEditMode ? "close" : "create";
+        let ok = await sendToSpreadsheet(action, payload);
 
-  showLoading(true, "Menyimpan Transaksi WO...");
+        if(ok){
+          alert("Transaksi WO Berhasil Diperbarui!");
+          modalWOObj.hide();
+          document.getElementById('mainWOForm').reset();
+          currentMaterials = [];
+          fetchSpreadsheetData();
+          fetchInventoryData();
+        } else {
+          alert("Gagal menyimpan data ke server.");
+        }
+        showLoading(false);
+      });
 
-  // Mengambil nilai dari form
-  let payload = {
-    nowo: document.getElementById('inNoWo').value,
-    tanggal: document.getElementById('inTanggal').value,
-    unit: document.getElementById('inUnit').value,
-    type: document.getElementById('inType').value,
-    komponen: document.getElementById('inKomponen').value,
-    deskripsi: document.getElementById('inDeskripsi').value,
-    jamMulai: document.getElementById('inJamMulai').value,
-    status: document.getElementById('inStatusBD').value,
-    // Data tambahan jika ada (kosongkan jika form belum disi)
-    jamSelesai: document.getElementById('inJamSelesai').value || "",
-    statusKerja: document.getElementById('inStatusKerja').value || "Belum Selesai",
-    descKerja: document.getElementById('inDescKerja').value || "",
-    manpower: document.getElementById('inManpower').value || "",
-    materialArr: currentMaterials // Array yang menampung part yang dipasang
-  };
+      // Submit Master Barang Baru
+      document.getElementById('formMasterBarangBaru').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        showLoading(true, "Mendaftarkan Item Baru...");
+        
+        let payload = {
+          itemId: document.getElementById('mItemId').value,
+          item: document.getElementById('mItem').value,
+          partNo: document.getElementById('mPartNo').value,
+          persamaan1: document.getElementById('mPersamaan1').value,
+          persamaan2: document.getElementById('mPersamaan2').value,
+          satuan: document.getElementById('mSatuan').value,
+          kategori: document.getElementById('mKategori').value,
+          stock: document.getElementById('mStock').value,
+          harga: parseRupiah(document.getElementById('mHarga').value)
+        };
 
-  // Mengirim ke Apps Script
-  // Pastikan parameter pertama adalah "create" agar di code.gs masuk ke case 'create'
-  let ok = await sendToSpreadsheet("create", payload);
+        let ok = await sendToSpreadsheet("add_new_item", payload);
+        if(ok) {
+          alert("Berhasil mendaftarkan item baru!");
+          bootstrap.Modal.getInstance(document.getElementById('modalMasterBarangBaru')).hide();
+          document.getElementById('formMasterBarangBaru').reset();
+          fetchInventoryData();
+        } else {
+          alert("Gagal menyimpan item baru.");
+        }
+        showLoading(false);
+      });
 
-  if(ok){
-    alert("WO Berhasil Dibuat!");
-    // Menutup modal
-    bootstrap.Modal.getInstance(document.getElementById('modalFormWO')).hide();
-    // Refresh data tabel
-    fetchSpreadsheetData();
-    // Reset form
-    document.getElementById('mainWOForm').reset();
-    currentMaterials = [];
-    renderMaterialSubTable();
-  } else {
-    alert("Gagal menyimpan data. Cek koneksi atau code.gs!");
-  }
+      // Submit Restock Barang Masuk
+      document.getElementById('formBarangMasuk').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        showLoading(true, "Memproses Restock Logistik...");
+        
+        let payload = {
+          date: document.getElementById('bmDate').value,
+          itemId: document.getElementById('bmItemId').value,
+          item: document.getElementById('bmItem').value,
+          partNo: document.getElementById('bmPartNo').value,
+          merk: document.getElementById('bmMerk').value,
+          vendor: document.getElementById('bmVendor').value,
+          qty: document.getElementById('bmQty').value,
+          satuan: document.getElementById('bmSatuan').value,
+          kategori: document.getElementById('bmKategori').value,
+          price: parseRupiah(document.getElementById('bmPrice').value)
+        };
 
-  showLoading(false);
-});
+        let ok = await sendToSpreadsheet("restock_inventory", payload);
+        if(ok) {
+          alert("Stok barang berhasil ditambahkan!");
+          bootstrap.Modal.getInstance(document.getElementById('modalBarangMasuk')).hide();
+          document.getElementById('formBarangMasuk').reset();
+          fetchInventoryData();
+        } else {
+          alert("Gagal memproses transaksi restock.");
+        }
+        showLoading(false);
+      });
+    });
 
-       
     /* =========================
-       TAB SWITCH
+       FETCH DATA
+    ========================= */
+    async function fetchSpreadsheetData() {
+      try {
+        let res = await fetch(SCRIPT_WEB_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain" },
+          body: JSON.stringify({ action: "read_wo" })
+        });
+        let json = await res.json();
+        if(json.status === "success") {
+          woData = json.data || [];
+          renderWOTables();
+        }
+      } catch(err) {
+        console.error("WO Fetch Error:", err);
+      }
+    }
+
+    async function fetchInventoryData() {
+      try {
+        let res = await fetch(SCRIPT_WEB_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain" },
+          body: JSON.stringify({ action: "read_inventory" })
+        });
+        let json = await res.json();
+        if(json.status === "success") {
+          dbBarangData = json.data || [];
+          renderInventoryTable(dbBarangData);
+        }
+      } catch(err) {
+        console.error("Inventory Fetch Error:", err);
+      }
+    }
+
+    /* =========================
+       RENDERERS
+    ========================= */
+    function renderInventoryTable(data) {
+      const tbody = document.getElementById("dbBarangTableBody");
+      const datalist = document.getElementById("itemIdSuggest");
+
+      if(!data || data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted">Database Kosong</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = data.map(item => {
+        let stock = Number(item["Stock"]) || 0;
+        let avail = Number(item["Available Stock"] || item["Avaliable Stock"]) || 0;
+        let style = avail <= 0 ? 'text-danger fw-bold' : avail <= 2 ? 'text-warning fw-bold' : '';
+
+        return `
+          <tr>
+            <td class="text-info fw-bold">${item["Item ID"] || "-"}</td>
+            <td>${item["Item"] || "-"}</td>
+            <td>${item["Part-No"] || item["Part No"] || "-"}</td>
+            <td>${item["Persamaan1"] || "-"} / ${item["Persamaan2"] || "-"}</td>
+            <td>${item["Satuan"] || "-"}</td>
+            <td><span class="badge bg-secondary">${item["Kategori"] || "-"}</span></td>
+            <td>${stock}</td>
+            <td class="${style}">${avail}</td>
+            <td>${formatRupiah(item["HARGA UPDATE"] || 0)}</td>
+          </tr>
+        `;
+      }).join("");
+
+      if(datalist) {
+        datalist.innerHTML = data.map(i =>
+          `<option value="${i["Item ID"]}">${i["Item"]} [${i["Part-No"] || i["Part No"] || "-"}]</option>`
+        ).join("");
+      }
+    }
+
+    function renderWOTables() {
+      const openT = document.getElementById('mainTableBodyOpen');
+      const closeT = document.getElementById('mainTableBodyClose');
+      let openHTML = "";
+      let closeHTML = "";
+
+      woData.forEach(wo => {
+        if(wo.status !== "RFU") {
+          openHTML += `
+            <tr>
+              <td>${wo.nowo}</td>
+              <td>${wo.tanggal}</td>
+              <td>${wo.unit}</td>
+              <td>${wo.type}</td>
+              <td>${wo.komponen}</td>
+              <td>${wo.deskripsi}</td>
+              <td>${wo.jamMulai}</td>
+              <td>
+                <button class="btn btn-success btn-sm" onclick="openFormClose('${wo.nowo}')">Close</button>
+              </td>
+            </tr>`;
+        } else {
+          closeHTML += `
+            <tr>
+              <td>${wo.nowo}</td>
+              <td>${wo.unit}</td>
+              <td>${wo.komponen}</td>
+              <td>${wo.jamSelesai || '-'}</td>
+              <td>${wo.durasiMenit || '-'}</td>
+              <td>${(wo.manpowerArr || []).join(", ")}</td>
+              <td><span class="badge bg-success">RFU</span></td>
+            </tr>`;
+        }
+      });
+
+      openT.innerHTML = openHTML || `<tr><td colspan="8" class="text-center">Tidak ada penanganan open</td></tr>`;
+      closeT.innerHTML = closeHTML || `<tr><td colspan="7" class="text-center">Riwayat kosong</td></tr>`;
+    }
+
+    function renderMaterialSubTable() {
+      const tbody = document.getElementById('materialListTableBody');
+      if (!tbody) return;
+      if (currentMaterials.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted">Belum ada part dimasukkan</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = currentMaterials.map((mat, idx) => `
+        <tr>
+          <td>${mat.itemId || '-'}</td>
+          <td>${mat.nama || '-'}</td>
+          <td>${mat.partNo || '-'}</td>
+          <td>${mat.qty}</td>
+          <td>${formatRupiah(mat.harga)}</td>
+          <td>${mat.statusMat}</td>
+          <td>
+            <button type="button" class="btn btn-danger btn-sm" onclick="removeMaterial(${idx})"><i class="fa fa-trash"></i></button>
+          </td>
+        </tr>
+      `).join("");
+    }
+
+    window.removeMaterial = function(idx) {
+      currentMaterials.splice(idx, 1);
+      renderMaterialSubTable();
+    };
+
+    window.openFormClose = function(nowo) {
+      isEditMode = true;
+      let wo = woData.find(w => w.nowo === nowo);
+      if(!wo) return;
+
+      document.getElementById('modalWOTitle').innerText = "Form Penutupan Kasus WO: " + nowo;
+      
+      // Load data awal breakdown ke form agar user tahu detail unitnya
+      document.getElementById('inNoWo').value = wo.nowo;
+      document.getElementById('inNoWo').setAttribute('readonly', true);
+      document.getElementById('inTanggal').value = wo.tanggal;
+      document.getElementById('inTanggal').setAttribute('readonly', true);
+      document.getElementById('inUnit').value = wo.unit;
+      document.getElementById('inUnit').setAttribute('readonly', true);
+      document.getElementById('inType').value = wo.type;
+      document.getElementById('inType').setAttribute('readonly', true);
+      document.getElementById('inKomponen').value = wo.komponen;
+      document.getElementById('inKomponen').setAttribute('readonly', true);
+      document.getElementById('inSubKomponen').value = wo.subkomponen || "";
+      document.getElementById('inSubKomponen').setAttribute('readonly', true);
+      document.getElementById('inDeskripsi').value = wo.deskripsi;
+      document.getElementById('inDeskripsi').setAttribute('readonly', true);
+      document.getElementById('inJamMulai').value = wo.jamMulai;
+      document.getElementById('inJamMulai').setAttribute('readonly', true);
+      
+      document.getElementById('inStatusBD').value = "RFU";
+      document.getElementById('inStatusBD').setAttribute('disabled', true);
+
+      // Munculkan formulir close out
+      currentMaterials = [];
+      renderMaterialSubTable();
+      document.getElementById('closeWOPanel').classList.remove('d-none');
+      modalWOObj.show();
+    };
+
+    /* =========================
+       UTILITIES & CONNECTOR
     ========================= */
     window.switchTab = function(tabName) {
       const menuWo = document.getElementById('menu-plant');
@@ -491,199 +658,28 @@ document.getElementById('mainWOForm').addEventListener('submit', async function(
       }
     };
 
-    /* =========================
-       LOADING
-    ========================= */
     function showLoading(show, text="Loading...") {
       const el = document.getElementById('loadingOverlay');
       document.getElementById('loadingText').innerText = text;
-
       if(show) el.classList.remove('d-none');
       else el.classList.add('d-none');
     }
 
-   /* =========================
-   FETCH WO DATA (DIPERBAIKI)
-========================= */
-async function fetchSpreadsheetData() {
-  try {
-    // Kirim sebagai POST, bukan GET
-    let res = await fetch(SCRIPT_WEB_URL, {
-      method: "POST",
-      headers: { "Content-Type": "text/plain" },
-      body: JSON.stringify({ action: "read_wo" }) // Data dikirim di sini
-    });
-    
-    let json = await res.json();
-    if(json.status === "success") {
-      woData = json.data || [];
-      renderWOTables();
-    }
-  } catch(err) {
-    console.error("WO Fetch Error:", err);
-  }
-}
-
-/* =========================
-   FETCH INVENTORY (DIPERBAIKI)
-========================= */
-async function fetchInventoryData() {
-  try {
-    let res = await fetch(SCRIPT_WEB_URL, {
-      method: "POST",
-      headers: { "Content-Type": "text/plain" },
-      body: JSON.stringify({ action: "read_inventory" }) // Data dikirim di sini
-    });
-    
-    let json = await res.json();
-    if(json.status === "success") {
-      dbBarangData = json.data || [];
-      renderInventoryTable(dbBarangData);
-    }
-  } catch(err) {
-    console.error("Inventory Error:", err);
-  }
-}
-    /* =========================
-       INVENTORY RENDER
-    ========================= */
-    function renderInventoryTable(data) {
-      const tbody = document.getElementById("dbBarangTableBody");
-      const datalist = document.getElementById("itemIdSuggest");
-
-      if(!data || data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="10" class="text-center text-muted">Database Kosong</td></tr>`;
-        return;
-      }
-
-      tbody.innerHTML = data.map(item => {
-        let stock = Number(item["Stock"]) || 0;
-        let avail = Number(item["Available Stock"] || item["Avaliable Stock"]) || 0;
-
-        let style = avail <= 0 ? 'text-danger fw-bold' :
-                    avail <= 2 ? 'text-warning fw-bold' : '';
-
-        return `
-          <tr>
-            <td class="text-info fw-bold">${item["Item ID"] || "-"}</td>
-            <td>${item["Item"] || "-"}</td>
-            <td>${item["Part No"] || item["Part-No"] || "-"}</td>
-            <td>${item["Persamaan1"] || "-"} / ${item["Persamaan2"] || "-"}</td>
-            <td>${item["Satuan"] || "-"}</td>
-            <td><span class="badge bg-secondary">${item["Kategori"] || "-"}</span></td>
-            <td>${stock}</td>
-            <td class="${style}">${avail}</td>
-            <td>${formatRupiah(item["HARGA UPDATE"] || 0)}</td>
-            <td>
-              <button class="btn btn-warning btn-sm btn-edit-barang" data-id="${item["Item ID"]}"><i class="fa fa-edit"></i></button>
-            </td>
-          </tr>
-        `;
-      }).join("");
-
-      if(datalist) {
-        datalist.innerHTML = data.map(i =>
-          `<option value="${i["Item ID"]}">${i["Item"]} [${i["Part No"] || "-"}]</option>`
-        ).join("");
-      }
-    }
-
-    /* =========================
-       FIXED: SUB-TABLE MATERIAL RENDER DEFINED
-    ========================= */
-    function renderMaterialSubTable() {
-      const tbody = document.getElementById('materialListTableBody');
-      if (!tbody) return;
-
-      if (currentMaterials.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted">Belum ada part</td></tr>`;
-        return;
-      }
-
-      tbody.innerHTML = currentMaterials.map((mat, idx) => `
-        <tr>
-          <td>${mat.itemId || '-'}</td>
-          <td>${mat.nama || '-'}</td>
-          <td>${mat.partNo || '-'}</td>
-          <td>${mat.qty}</td>
-          <td>${formatRupiah(mat.harga)}</td>
-          <td>${mat.statusMat}</td>
-          <td>
-            <button type="button" class="btn btn-danger btn-sm" onclick="removeMaterial(${idx})"><i class="fa fa-trash"></i></button>
-          </td>
-        </tr>
-      `).join("");
-    }
-
-    window.removeMaterial = function(idx) {
-      currentMaterials.splice(idx, 1);
-      renderMaterialSubTable();
-    };
-
-    /* =========================
-       WO TABLE RENDER (FIXED COLUMN ALIGNMENT)
-    ========================= */
-    function renderWOTables() {
-      const openT = document.getElementById('mainTableBodyOpen');
-      const closeT = document.getElementById('mainTableBodyClose');
-
-      let openHTML = "";
-      let closeHTML = "";
-
-      woData.forEach(wo => {
-        if(wo.status !== "RFU") {
-          openHTML += `
-            <tr>
-              <td>${wo.nowo}</td>
-              <td>${wo.tanggal}</td>
-              <td>${wo.unit}</td>
-              <td>${wo.type}</td>
-              <td>${wo.komponen}</td>
-              <td>${wo.deskripsi}</td>
-              <td>${wo.jamMulai}</td>
-              <td>
-                <button class="btn btn-success btn-sm" onclick="openFormClose('${wo.nowo}')">Close</button>
-              </td>
-            </tr>`;
-        } else {
-          // FIXED: Menyesuaikan jumlah td dengan susunan th (7 kolom) pada tabel Close
-          closeHTML += `
-            <tr>
-              <td>${wo.nowo}</td>
-              <td>${wo.unit}</td>
-              <td>${wo.komponen}</td>
-              <td>${wo.jamSelesai || '-'}</td>
-              <td>${wo.durasiMenit || '-'}</td>
-              <td>${(wo.manpowerArr || []).join(", ")}</td>
-              <td><span class="badge bg-success">RFU</span></td>
-            </tr>`;
-        }
-      });
-
-      openT.innerHTML = openHTML || `<tr><td colspan="8" class="text-center">No Data</td></tr>`;
-      closeT.innerHTML = closeHTML || `<tr><td colspan="7" class="text-center">No History</td></tr>`;
-    }
-
-    /* =========================
-       UTIL
-    ========================= */
     function formatRupiah(num){
       return "Rp " + Number(num || 0).toLocaleString("id-ID");
     }
+    
     function parseRupiah(str){
       return Number(String(str).replace(/[^0-9]/g,'')) || 0;
     }
 
-    /* =========================
-       SEND API
-    ========================= */
     async function sendToSpreadsheet(action, data) {
       try {
         let res = await fetch(SCRIPT_WEB_URL, {
           method: "POST",
+          headers: { "Content-Type": "text/plain" },
           body: JSON.stringify({action, data})
         });
-
         let json = await res.json();
         return json.status === "success";
       } catch(err) {
@@ -691,59 +687,6 @@ async function fetchInventoryData() {
         return false;
       }
     }
-
-    /* =========================
-       CLOSE WO
-    ========================= */
-    window.openFormClose = function(nowo) {
-      isEditMode = true;
-
-      let wo = woData.find(w => w.nowo === nowo);
-      if(!wo) return;
-
-      document.getElementById('inNoWo').value = wo.nowo;
-      document.getElementById('closeWOPanel').classList.remove('d-none');
-
-      new bootstrap.Modal(document.getElementById('modalFormWO')).show();
-    };
-
-    /* =========================
-       SUBMIT WO (FIXED EXPLICIT DOM CALLS)
-    ========================= */
-    document.getElementById('mainWOForm').addEventListener('submit', async function(e){
-      e.preventDefault();
-
-      showLoading(true,"Saving WO...");
-
-      // FIXED: Menggunakan document.getElementById agar pemanggilan data form lebih aman dan stabil
-      let payload = {
-        nowo: document.getElementById('inNoWo').value,
-        tanggal: document.getElementById('inTanggal').value,
-        unit: document.getElementById('inUnit').value,
-        type: document.getElementById('inType').value,
-        komponen: document.getElementById('inKomponen').value,
-        deskripsi: document.getElementById('inDeskripsi').value,
-        jamMulai: document.getElementById('inJamMulai').value,
-        status: document.getElementById('inStatusBD').value,
-        jamSelesai: document.getElementById('inJamSelesai').value,
-        statusKerja: document.getElementById('inStatusKerja').value,
-        descKerja: document.getElementById('inDescKerja').value,
-        manpower: document.getElementById('inManpower').value,
-        materialArr: currentMaterials
-      };
-
-      let action = isEditMode ? "close" : "create";
-
-      let ok = await sendToSpreadsheet(action, payload);
-
-      if(ok){
-        bootstrap.Modal.getInstance(document.getElementById('modalFormWO')).hide();
-        fetchSpreadsheetData();
-        fetchInventoryData();
-      }
-
-      showLoading(false);
-    });
   </script>
 </body>
 </html>
