@@ -324,79 +324,149 @@
         document.getElementById('closeWOPanel').classList.add('d-none');
       });
 
-      // FIXED: Menambahkan fungsionalitas tombol Add Material (Pasang Part)
-      document.getElementById('btnAddMaterial').addEventListener('click', () => {
-        const itemId = document.getElementById('matItemId').value;
-        const nama = document.getElementById('matNama').value;
-        const partNo = document.getElementById('matPartNo').value;
-        const qty = Number(document.getElementById('matQty').value) || 1;
-        const harga = parseRupiah(document.getElementById('matHarga').value);
-        const statusMat = document.getElementById('matStatusMat').value;
+     // FIXED: Menambahkan fungsionalitas tombol Add Material
+document.getElementById('btnAddMaterial').addEventListener('click', (e) => {
+  // Mencegah form melakukan submit/refresh halaman
+  e.preventDefault(); 
+  
+  const itemId = document.getElementById('matItemId').value;
+  const nama = document.getElementById('matNama').value;
+  const partNo = document.getElementById('matPartNo').value;
+  const qty = Number(document.getElementById('matQty').value) || 1;
+  const harga = parseRupiah(document.getElementById('matHarga').value);
+  const statusMat = document.getElementById('matStatusMat').value;
 
-        if(!nama) {
-          alert("Nama barang wajib diisi!");
-          return;
-        }
+  if(!nama) {
+    alert("Nama barang wajib diisi!");
+    return;
+  }
 
-        // 1. TAMBAH MASTER BARANG BARU
-      document.getElementById('formMasterBarangBaru').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        showLoading(true, "Mendaftarkan Item...");
-        let payload = {
-          itemId: document.getElementById('mItemId').value,
-          item: document.getElementById('mItem').value,
-          partNo: document.getElementById('mPartNo').value,
-          persamaan1: document.getElementById('mPersamaan1').value,
-          persamaan2: document.getElementById('mPersamaan2').value,
-          satuan: document.getElementById('mSatuan').value,
-          kategori: document.getElementById('mKategori').value,
-          stock: document.getElementById('mStock').value,
-          harga: parseRupiah(document.getElementById('mHarga').value)
-        };
-        let ok = await sendToSpreadsheet("add_new_item", payload);
-        if(ok) {
-          bootstrap.Modal.getInstance(document.getElementById('modalMasterBarangBaru')).hide();
-          fetchInventoryData();
-        }
-        showLoading(false);
-      });
+  // Tambahkan data ke array
+  currentMaterials.push({ itemId, nama, partNo, qty, harga, statusMat });
+  
+  // Render ulang tabel
+  renderMaterialSubTable();
 
-      // 2. INPUT BARANG MASUK (VENDOR)
-      document.getElementById('formBarangMasuk').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        showLoading(true, "Proses Restock...");
-        let payload = {
-          date: document.getElementById('bmDate').value,
-          itemId: document.getElementById('bmItemId').value,
-          item: document.getElementById('bmItem').value,
-          partNo: document.getElementById('bmPartNo').value,
-          merk: document.getElementById('bmMerk').value,
-          vendor: document.getElementById('bmVendor').value,
-          qty: document.getElementById('bmQty').value,
-          satuan: document.getElementById('bmSatuan').value,
-          kategori: document.getElementById('bmKategori').value,
-          price: parseRupiah(document.getElementById('bmPrice').value)
-        };
-        let ok = await sendToSpreadsheet("restock_inventory", payload);
-        if(ok) {
-          bootstrap.Modal.getInstance(document.getElementById('modalBarangMasuk')).hide();
-          fetchInventoryData();
-        }
-        showLoading(false);
-      });
+  // Reset input sub-form
+  document.getElementById('matItemId').value = '';
+  document.getElementById('matNama').value = '';
+  document.getElementById('matPartNo').value = '';
+  document.getElementById('matQty').value = '1';
+  document.getElementById('matHarga').value = 'Rp 0';
+  document.getElementById('matStatusMat').selectedIndex = 0;
+});
 
-        currentMaterials.push({ itemId, nama, partNo, qty, harga, statusMat });
-        renderMaterialSubTable();
+        /* ========================================================
+   EVENT LISTENERS UNTUK MENGHUBUNGKAN FORM KE GOOGLE SHEETS
+   ======================================================== */
 
-        // Reset sub-form material
-        document.getElementById('matItemId').value = '';
-        document.getElementById('matNama').value = '';
-        document.getElementById('matPartNo').value = '';
-        document.getElementById('matQty').value = '1';
-        document.getElementById('matHarga').value = '';
-      });
-    });
+// 1. FORM TAMBAH MASTER BARANG BARU
+document.getElementById('formMasterBarangBaru').addEventListener('submit', async (e) => {
+  e.preventDefault(); // Mencegah halaman refresh
+  showLoading(true, "Mendaftarkan Item Baru...");
+  
+  let payload = {
+    itemId: document.getElementById('mItemId').value,
+    item: document.getElementById('mItem').value,
+    partNo: document.getElementById('mPartNo').value,
+    persamaan1: document.getElementById('mPersamaan1').value,
+    persamaan2: document.getElementById('mPersamaan2').value,
+    satuan: document.getElementById('mSatuan').value,
+    kategori: document.getElementById('mKategori').value,
+    stock: document.getElementById('mStock').value,
+    harga: parseRupiah(document.getElementById('mHarga').value)
+  };
 
+  let ok = await sendToSpreadsheet("add_new_item", payload);
+  if(ok) {
+    alert("Berhasil mendaftarkan item!");
+    bootstrap.Modal.getInstance(document.getElementById('modalMasterBarangBaru')).hide();
+    document.getElementById('formMasterBarangBaru').reset();
+    fetchInventoryData(); // Refresh data tabel
+  } else {
+    alert("Gagal menyimpan data.");
+  }
+  showLoading(false);
+});
+
+// 2. FORM INPUT BARANG MASUK (VENDOR)
+document.getElementById('formBarangMasuk').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  showLoading(true, "Memproses Restock...");
+  
+  let payload = {
+    date: document.getElementById('bmDate').value,
+    itemId: document.getElementById('bmItemId').value,
+    item: document.getElementById('bmItem').value,
+    partNo: document.getElementById('bmPartNo').value,
+    merk: document.getElementById('bmMerk').value,
+    vendor: document.getElementById('bmVendor').value,
+    qty: document.getElementById('bmQty').value,
+    satuan: document.getElementById('bmSatuan').value,
+    kategori: document.getElementById('bmKategori').value,
+    price: parseRupiah(document.getElementById('bmPrice').value)
+  };
+
+  let ok = await sendToSpreadsheet("restock_inventory", payload);
+  if(ok) {
+    alert("Barang berhasil masuk!");
+    bootstrap.Modal.getInstance(document.getElementById('modalBarangMasuk')).hide();
+    document.getElementById('formBarangMasuk').reset();
+    fetchInventoryData(); // Refresh data tabel
+  } else {
+    alert("Gagal memproses barang masuk.");
+  }
+  showLoading(false);
+});
+
+      /* =========================
+   FUNGSI TAMBAH WO
+   ========================= */
+document.getElementById('mainWOForm').addEventListener('submit', async function(e){
+  e.preventDefault(); // Mencegah form melakukan reload halaman
+
+  showLoading(true, "Menyimpan Transaksi WO...");
+
+  // Mengambil nilai dari form
+  let payload = {
+    nowo: document.getElementById('inNoWo').value,
+    tanggal: document.getElementById('inTanggal').value,
+    unit: document.getElementById('inUnit').value,
+    type: document.getElementById('inType').value,
+    komponen: document.getElementById('inKomponen').value,
+    deskripsi: document.getElementById('inDeskripsi').value,
+    jamMulai: document.getElementById('inJamMulai').value,
+    status: document.getElementById('inStatusBD').value,
+    // Data tambahan jika ada (kosongkan jika form belum disi)
+    jamSelesai: document.getElementById('inJamSelesai').value || "",
+    statusKerja: document.getElementById('inStatusKerja').value || "Belum Selesai",
+    descKerja: document.getElementById('inDescKerja').value || "",
+    manpower: document.getElementById('inManpower').value || "",
+    materialArr: currentMaterials // Array yang menampung part yang dipasang
+  };
+
+  // Mengirim ke Apps Script
+  // Pastikan parameter pertama adalah "create" agar di code.gs masuk ke case 'create'
+  let ok = await sendToSpreadsheet("create", payload);
+
+  if(ok){
+    alert("WO Berhasil Dibuat!");
+    // Menutup modal
+    bootstrap.Modal.getInstance(document.getElementById('modalFormWO')).hide();
+    // Refresh data tabel
+    fetchSpreadsheetData();
+    // Reset form
+    document.getElementById('mainWOForm').reset();
+    currentMaterials = [];
+    renderMaterialSubTable();
+  } else {
+    alert("Gagal menyimpan data. Cek koneksi atau code.gs!");
+  }
+
+  showLoading(false);
+});
+
+       
     /* =========================
        TAB SWITCH
     ========================= */
