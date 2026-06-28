@@ -95,23 +95,60 @@
       </div>
     </div>
 
-    <!-- INTERFACES 2: INVENTORY LOGISTICS DATABASE -->
-    <div id="inventory-content" class="d-none">
-      <div class="dashboard-title d-flex justify-content-between align-items-center">
-        <span>Logistik Suku Cadang Alat Berat</span>
-        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalBarangMasuk"><i class="fa fa-cart-plus"></i> Input Barang Masuk (Vendor)</button>
-      </div>
-      <div class="table-responsive">
-        <table class="main-table">
-          <thead>
-            <tr>
-              <th>Item ID</th><th>Nama Item</th><th>Part No</th><th>Persamaan 1 / 2</th><th>Satuan</th><th>Kategori</th><th>Physical Stock</th><th>Available Stock</th><th>Harga Update</th>
-            </tr>
-          </thead>
-          <tbody id="dbBarangTableBody"></tbody>
-        </table>
-      </div>
+    <!-- <!-- INTERFACES 2: INVENTORY LOGISTICS DATABASE -->
+<div id="inventory-content" class="d-none">
+  <div class="dashboard-title d-flex justify-content-between align-items-center">
+    <span>Logistik Suku Cadang Alat Berat</span>
+    <div class="d-flex gap-2">
+      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalMasterBarang Baru"><i class="fa fa-plus-circle"></i> Tambah Master Item Baru</button>
+      <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalBarangMasuk"><i class="fa fa-cart-plus"></i> Input Barang Masuk (Vendor)</button>
     </div>
+  </div>
+  <div class="table-responsive">
+    <table class="main-table">
+      <thead>
+        <tr>
+          <th>Item ID</th><th>Nama Item</th><th>Part No</th><th>Persamaan 1 / 2</th><th>Satuan</th><th>Kategori</th><th>Physical Stock</th><th>Avaliable Stock</th><th>Harga Update</th>
+        </tr>
+      </thead>
+      <tbody id="dbBarangTableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- MODAL BARU: TAMBAH MASTER BARANG BARU -->
+<div class="modal fade" id="modalMasterBarangBaru" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="background: var(--card-bg); border: 1px solid #2e304e;">
+      <form id="formMasterBarangBaru" autocomplete="off">
+        <div class="modal-header border-secondary">
+          <h5 class="modal-title text-primary"><i class="fa fa-box"></i> Daftarkan Item Baru ke Master</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-6 mb-2"><label class="form-label">Item ID Baru</label><input type="text" class="form-control" id="mItemId" placeholder="Contoh: ITM-001" required></div>
+            <div class="col-md-6 mb-2"><label class="form-label">Kategori</label><input type="text" class="form-control" id="mKategori" placeholder="Filter / Hose" required></div>
+          </div>
+          <div class="mb-2"><label class="form-label">Nama Barang</label><input type="text" class="form-control" id="mItem" required></div>
+          <div class="mb-2"><label class="form-label">Part No</label><input type="text" class="form-control" id="mPartNo" required></div>
+          <div class="row">
+            <div class="col-md-6 mb-2"><label class="form-label">Persamaan 1</label><input type="text" class="form-control" id="mPersamaan1" placeholder="-"></div>
+            <div class="col-md-6 mb-2"><label class="form-label">Persamaan 2</label><input type="text" class="form-control" id="mPersamaan2" placeholder="-"></div>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-2"><label class="form-label">Satuan</label><input type="text" class="form-control" id="mSatuan" placeholder="pcs / ltr" required></div>
+            <div class="col-md-6 mb-2"><label class="form-label">Harga Awal</label><input type="text" class="form-control" id="mHarga" value="Rp 0" required></div>
+          </div>
+          <div class="mb-2"><label class="form-label">Stok Awal Fisink (Opsional)</label><input type="number" class="form-control" id="mStock" value="0" min="0"></div>
+        </div>
+        <div class="modal-footer border-secondary">
+          <button type="submit" class="btn btn-primary w-100">Daftarkan Suku Cadang</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 
   </div>
 
@@ -514,7 +551,38 @@
     }
     function parseRupiah(str) {
       return Number(String(str).replace(/[^0-9]/g, '')) || 0;
+      
     }
+
+// Handler Submit Form Master Barang Baru
+document.getElementById('formMasterBarangBaru').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  showLoading(true, "Mendaftarkan Item Baru ke Master...");
+  
+  let payload = {
+    itemId: document.getElementById('mItemId').value.trim(),
+    item: document.getElementById('mItem').value.trim(),
+    partNo: document.getElementById('mPartNo').value.trim(),
+    persamaan1: document.getElementById('mPersamaan1').value.trim(),
+    persamaan2: document.getElementById('mPersamaan2').value.trim(),
+    satuan: document.getElementById('mSatuan').value.trim(),
+    kategori: document.getElementById('mKategori').value.trim(),
+    harga: parseRupiah(document.getElementById('mHarga').value),
+    stock: Number(document.getElementById('mStock').value) || 0
+  };
+
+  let success = await sendToSpreadsheet("add_new_item", payload);
+  if(success) {
+    bootstrap.Modal.getInstance(document.getElementById('modalMasterBarangBaru')).hide();
+    document.getElementById('formMasterBarangBaru').reset();
+    await fetchInventoryData(); // Refresh auto-suggest datalist
+  }
+  showLoading(false);
+});
+
+// Format Rupiah Live Input pada Form Master Baru
+document.getElementById("mHarga").addEventListener("input", (e) => e.target.value = formatRupiah(parseRupiah(e.target.value)));
+    
   </script>
 </body>
 </html>
