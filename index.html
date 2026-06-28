@@ -425,6 +425,116 @@
           alert("Error Server: " + res.message);
         }
       });
+      // ==================== OPERASIONAL WORK ORDER ====================
+    window.pemicuEditWO = function(nowo) {
+      isEditMode = true;
+      let wo = woData.find(w => w.nowo === nowo);
+      if(!wo) return;
+
+      document.getElementById('modalWOTitle').innerText = "Edit Data WO: " + nowo;
+      document.getElementById('inNoWo').value = wo.nowo;
+      document.getElementById('inTanggal').value = wo.tanggal;
+      document.getElementById('inUnit').value = wo.unit;
+      document.getElementById('inType').value = wo.type;
+      document.getElementById('inKomponen').value = wo.komponen;
+      document.getElementById('inSubKomponen').value = wo.subkomponen || "";
+      document.getElementById('inDeskripsi').value = wo.deskripsi;
+      document.getElementById('inJamMulai').value = wo.jamMulai;
+      document.getElementById('inStatusBD').value = wo.status || "Breakdown";
+      
+      toggleWOFields(false); 
+      document.getElementById('inNoWo').setAttribute('readonly', true);
+
+      if(wo.status === "Breakdown") {
+        document.getElementById('closeWOPanel').classList.add('d-none');
+      } else {
+        document.getElementById('closeWOPanel').classList.remove('d-none');
+        document.getElementById('inJamSelesai').value = wo.jamSelesai || "";
+        document.getElementById('inStatusKerja').value = wo.statusPekerjaan || "Selesai";
+        document.getElementById('inDescKerja').value = wo.descPekerjaan || "";
+        document.getElementById('inManpower').value = (wo.manpowerArr || []).join(", ");
+      }
+
+      currentMaterials = JSON.parse(JSON.stringify(wo.materialArr || []));
+      renderMaterialSubTable();
+      modalWOObj.show();
+    };
+
+    window.pemicuHapusWO = async function(nowo) {
+      if(!confirm("Hapus Permanen No WO: " + nowo + " beserta relasi sparepart terpasang?")) return;
+      showLoading(true, "Menghapus Transaksi WO...");
+      let res = await sampaikanKeServer("delete_wo", { nowo: nowo });
+      showLoading(false);
+      if(res.status === "success") { alert("Data WO Berhasil Dihapus!"); refreshAllData(); }
+      else { alert("Gagal: " + res.message); }
+    };
+
+    // ==================== OPERASIONAL DATABASE INVENTORY ====================
+    let isEditInventoryMode = false;
+
+    window.pemicuEditInventory = function(itemId) {
+      isEditInventoryMode = true;
+      let item = dbBarangData.find(i => String(i["Item ID"]).trim() === itemId.trim());
+      if(!item) return;
+
+      // Paksa pakai form register item baru, tapi ubah judul fungsinya
+      document.getElementById('mItemId').value = item["Item ID"];
+      document.getElementById('mItemId').setAttribute('readonly', true); // ID Kunci Utama
+      document.getElementById('mItem').value = item["Item"] || "";
+      document.getElementById('mPartNo').value = item["Part-No"] || item["Part No"] || "";
+      document.getElementById('mPersamaan1').value = item["Persamaan1"] || "";
+      document.getElementById('mPersamaan2').value = item["Persamaan2"] || "";
+      document.getElementById('mSatuan').value = item["Satuan"] || "";
+      document.getElementById('mKategori').value = item["Kategori"] || "";
+      document.getElementById('mStock').value = item["Stock"] || 0;
+      document.getElementById('mHarga').value = formatRupiah(item["HARGA UPDATE"] || 0);
+
+      let modalMaster = new bootstrap.Modal(document.getElementById('modalMasterBarangBaru'));
+      document.getElementById('modalMasterBarangBaru').querySelector('.modal-title').innerText = "Edit Suku Cadang Master";
+      modalMaster.show();
+    };
+
+    // Intersepsi submit master item agar bisa melakukan "update" selain "add_new_item"
+    document.getElementById('formMasterBarangBaru').addEventListener('submit', async function(e) {
+      if(!isEditInventoryMode) return; // Biarkan handler bawaan yang jalan jika mode input baru
+      e.preventDefault();
+      e.stopImmediatePropagation(); // Hentikan fungsi lama agar tidak double submit
+      
+      showLoading(true, "Memperbarui Data Master Suku Cadang...");
+      let payload = {
+        itemId: document.getElementById('mItemId').value,
+        item: document.getElementById('mItem').value,
+        partNo: document.getElementById('mPartNo').value,
+        persamaan1: document.getElementById('mPersamaan1').value,
+        persamaan2: document.getElementById('mPersamaan2').value,
+        satuan: document.getElementById('mSatuan').value,
+        kategori: document.getElementById('mKategori').value,
+        stock: document.getElementById('mStock').value,
+        harga: parseRupiah(document.getElementById('mHarga').value)
+      };
+
+      let res = await sampaikanKeServer("update_inventory", payload);
+      showLoading(false);
+      if(res.status === "success") {
+        alert("Data Suku Cadang Berhasil Diupdate!");
+        bootstrap.Modal.getInstance(document.getElementById('modalMasterBarangBaru')).hide();
+        document.getElementById('formMasterBarangBaru').reset();
+        document.getElementById('mItemId').removeAttribute('readonly');
+        isEditInventoryMode = false;
+        refreshAllData();
+      } else {
+        alert("Error Server: " + res.message);
+      }
+    });
+
+    window.pemicuHapusInventory = async function(itemId) {
+      if(!confirm("PERINGATAN: Menghapus Item ID [" + itemId + "] akan menghilangkan baris master suku cadang ini dari database. Lanjutkan?")) return;
+      showLoading(true, "Menghapus Item Master...");
+      let res = await sampaikanKeServer("delete_inventory", { itemId: itemId });
+      showLoading(false);
+      if(res.status === "success") { alert("Item Berhasil Dihapus dari Gudang!"); refreshAllData(); }
+      else { alert("Gagal: " + res.message); }
+    };
     });
 
     // Sinkronisasi Mengambil Data Menggunakan Fetch API
@@ -648,116 +758,6 @@
         if(this.value === '') this.value = 'Rp 0';
       });
     }
-// ==================== OPERASIONAL WORK ORDER ====================
-    window.pemicuEditWO = function(nowo) {
-      isEditMode = true;
-      let wo = woData.find(w => w.nowo === nowo);
-      if(!wo) return;
-
-      document.getElementById('modalWOTitle').innerText = "Edit Data WO: " + nowo;
-      document.getElementById('inNoWo').value = wo.nowo;
-      document.getElementById('inTanggal').value = wo.tanggal;
-      document.getElementById('inUnit').value = wo.unit;
-      document.getElementById('inType').value = wo.type;
-      document.getElementById('inKomponen').value = wo.komponen;
-      document.getElementById('inSubKomponen').value = wo.subkomponen || "";
-      document.getElementById('inDeskripsi').value = wo.deskripsi;
-      document.getElementById('inJamMulai').value = wo.jamMulai;
-      document.getElementById('inStatusBD').value = wo.status || "Breakdown";
-      
-      toggleWOFields(false); 
-      document.getElementById('inNoWo').setAttribute('readonly', true);
-
-      if(wo.status === "Breakdown") {
-        document.getElementById('closeWOPanel').classList.add('d-none');
-      } else {
-        document.getElementById('closeWOPanel').classList.remove('d-none');
-        document.getElementById('inJamSelesai').value = wo.jamSelesai || "";
-        document.getElementById('inStatusKerja').value = wo.statusPekerjaan || "Selesai";
-        document.getElementById('inDescKerja').value = wo.descPekerjaan || "";
-        document.getElementById('inManpower').value = (wo.manpowerArr || []).join(", ");
-      }
-
-      currentMaterials = JSON.parse(JSON.stringify(wo.materialArr || []));
-      renderMaterialSubTable();
-      modalWOObj.show();
-    };
-
-    window.pemicuHapusWO = async function(nowo) {
-      if(!confirm("Hapus Permanen No WO: " + nowo + " beserta relasi sparepart terpasang?")) return;
-      showLoading(true, "Menghapus Transaksi WO...");
-      let res = await sampaikanKeServer("delete_wo", { nowo: nowo });
-      showLoading(false);
-      if(res.status === "success") { alert("Data WO Berhasil Dihapus!"); refreshAllData(); }
-      else { alert("Gagal: " + res.message); }
-    };
-
-    // ==================== OPERASIONAL DATABASE INVENTORY ====================
-    let isEditInventoryMode = false;
-
-    window.pemicuEditInventory = function(itemId) {
-      isEditInventoryMode = true;
-      let item = dbBarangData.find(i => String(i["Item ID"]).trim() === itemId.trim());
-      if(!item) return;
-
-      // Paksa pakai form register item baru, tapi ubah judul fungsinya
-      document.getElementById('mItemId').value = item["Item ID"];
-      document.getElementById('mItemId').setAttribute('readonly', true); // ID Kunci Utama
-      document.getElementById('mItem').value = item["Item"] || "";
-      document.getElementById('mPartNo').value = item["Part-No"] || item["Part No"] || "";
-      document.getElementById('mPersamaan1').value = item["Persamaan1"] || "";
-      document.getElementById('mPersamaan2').value = item["Persamaan2"] || "";
-      document.getElementById('mSatuan').value = item["Satuan"] || "";
-      document.getElementById('mKategori').value = item["Kategori"] || "";
-      document.getElementById('mStock').value = item["Stock"] || 0;
-      document.getElementById('mHarga').value = formatRupiah(item["HARGA UPDATE"] || 0);
-
-      let modalMaster = new bootstrap.Modal(document.getElementById('modalMasterBarangBaru'));
-      document.getElementById('modalMasterBarangBaru').querySelector('.modal-title').innerText = "Edit Suku Cadang Master";
-      modalMaster.show();
-    };
-
-    // Intersepsi submit master item agar bisa melakukan "update" selain "add_new_item"
-    document.getElementById('formMasterBarangBaru').addEventListener('submit', async function(e) {
-      if(!isEditInventoryMode) return; // Biarkan handler bawaan yang jalan jika mode input baru
-      e.preventDefault();
-      e.stopImmediatePropagation(); // Hentikan fungsi lama agar tidak double submit
-      
-      showLoading(true, "Memperbarui Data Master Suku Cadang...");
-      let payload = {
-        itemId: document.getElementById('mItemId').value,
-        item: document.getElementById('mItem').value,
-        partNo: document.getElementById('mPartNo').value,
-        persamaan1: document.getElementById('mPersamaan1').value,
-        persamaan2: document.getElementById('mPersamaan2').value,
-        satuan: document.getElementById('mSatuan').value,
-        kategori: document.getElementById('mKategori').value,
-        stock: document.getElementById('mStock').value,
-        harga: parseRupiah(document.getElementById('mHarga').value)
-      };
-
-      let res = await sampaikanKeServer("update_inventory", payload);
-      showLoading(false);
-      if(res.status === "success") {
-        alert("Data Suku Cadang Berhasil Diupdate!");
-        bootstrap.Modal.getInstance(document.getElementById('modalMasterBarangBaru')).hide();
-        document.getElementById('formMasterBarangBaru').reset();
-        document.getElementById('mItemId').removeAttribute('readonly');
-        isEditInventoryMode = false;
-        refreshAllData();
-      } else {
-        alert("Error Server: " + res.message);
-      }
-    });
-
-    window.pemicuHapusInventory = async function(itemId) {
-      if(!confirm("PERINGATAN: Menghapus Item ID [" + itemId + "] akan menghilangkan baris master suku cadang ini dari database. Lanjutkan?")) return;
-      showLoading(true, "Menghapus Item Master...");
-      let res = await sampaikanKeServer("delete_inventory", { itemId: itemId });
-      showLoading(false);
-      if(res.status === "success") { alert("Item Berhasil Dihapus dari Gudang!"); refreshAllData(); }
-      else { alert("Gagal: " + res.message); }
-    };
     
   </script>
 </body>
