@@ -338,6 +338,53 @@
           return;
         }
 
+        // 1. TAMBAH MASTER BARANG BARU
+      document.getElementById('formMasterBarangBaru').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        showLoading(true, "Mendaftarkan Item...");
+        let payload = {
+          itemId: document.getElementById('mItemId').value,
+          item: document.getElementById('mItem').value,
+          partNo: document.getElementById('mPartNo').value,
+          persamaan1: document.getElementById('mPersamaan1').value,
+          persamaan2: document.getElementById('mPersamaan2').value,
+          satuan: document.getElementById('mSatuan').value,
+          kategori: document.getElementById('mKategori').value,
+          stock: document.getElementById('mStock').value,
+          harga: parseRupiah(document.getElementById('mHarga').value)
+        };
+        let ok = await sendToSpreadsheet("add_new_item", payload);
+        if(ok) {
+          bootstrap.Modal.getInstance(document.getElementById('modalMasterBarangBaru')).hide();
+          fetchInventoryData();
+        }
+        showLoading(false);
+      });
+
+      // 2. INPUT BARANG MASUK (VENDOR)
+      document.getElementById('formBarangMasuk').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        showLoading(true, "Proses Restock...");
+        let payload = {
+          date: document.getElementById('bmDate').value,
+          itemId: document.getElementById('bmItemId').value,
+          item: document.getElementById('bmItem').value,
+          partNo: document.getElementById('bmPartNo').value,
+          merk: document.getElementById('bmMerk').value,
+          vendor: document.getElementById('bmVendor').value,
+          qty: document.getElementById('bmQty').value,
+          satuan: document.getElementById('bmSatuan').value,
+          kategori: document.getElementById('bmKategori').value,
+          price: parseRupiah(document.getElementById('bmPrice').value)
+        };
+        let ok = await sendToSpreadsheet("restock_inventory", payload);
+        if(ok) {
+          bootstrap.Modal.getInstance(document.getElementById('modalBarangMasuk')).hide();
+          fetchInventoryData();
+        }
+        showLoading(false);
+      });
+
         currentMaterials.push({ itemId, nama, partNo, qty, harga, statusMat });
         renderMaterialSubTable();
 
