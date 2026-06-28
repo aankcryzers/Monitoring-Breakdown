@@ -231,39 +231,53 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
+    // =========================================================================
+    // TEMPELKAN WEB APP URL GOOGLE SCRIPT ANDA DI BAWAH INI
+    // =========================================================================
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw-8Np1rneYt0k3UXnZz25Asqn4oHYih42_GMRHbiTYaMlwmKGe3oXo9j4e4dvkODlkWw/exec";
+
     let woData = [];
     let dbBarangData = [];
     let currentMaterials = [];
     let isEditMode = false;
     let modalWOObj = null;
 
+    // Fungsi Jembatan untuk Mengirim Data dari GitHub ke Google Script (doPost) via Fetch API
+    async function sampaikanKeServer(actionName, dataPayload = {}) {
+      try {
+        let response = await fetch(SCRIPT_URL, {
+          method: "POST",
+          mode: "cors",
+          headers: { "Content-Type": "text/plain" },
+          body: JSON.stringify({ action: actionName, data: dataPayload })
+        });
+        let resultText = await response.text();
+        return JSON.parse(resultText);
+      } catch (err) {
+        return { status: "error", message: err.toString() };
+      }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       modalWOObj = new bootstrap.Modal(document.getElementById('modalFormWO'));
       
-      // Load Data Awal Saat Aplikasi Terbuka
       refreshAllData();
 
-      // Masking Format Rupiah secara Live untuk input harga
       setupRupiahMasking('mHarga');
       setupRupiahMasking('bmPrice');
       setupRupiahMasking('matHarga');
 
-      // Handler Tombol Munculkan Form WO Baru
       document.getElementById('btnShowFormWO').addEventListener('click', () => {
         isEditMode = false;
         document.getElementById('modalWOTitle').innerText = "Buat Transaksi WO Baru";
         document.getElementById('mainWOForm').reset();
-        
-        // Membuka kunci input fields
         toggleWOFields(false);
-        
         currentMaterials = [];
         renderMaterialSubTable();
         document.getElementById('closeWOPanel').classList.add('d-none');
         modalWOObj.show();
       });
 
-      // Handler Tambah Item Suku Cadang ke Tabel Sementara (Form WO)
       document.getElementById('btnAddMaterial').addEventListener('click', (e) => {
         e.preventDefault(); 
         const itemId = document.getElementById('matItemId').value.trim();
@@ -282,7 +296,6 @@
         currentMaterials.push({ itemId, nama, partNo, qty, harga, statusMat, satuan });
         renderMaterialSubTable();
 
-        // Reset Sub Form Input Suku Cadang
         document.getElementById('matItemId').value = '';
         document.getElementById('matNama').value = '';
         document.getElementById('matPartNo').value = '';
@@ -292,7 +305,6 @@
         document.getElementById('matStatusMat').selectedIndex = 0;
       });
 
-      // Autofill Sugesti untuk Modul Logistik Barang Masuk
       document.getElementById('bmItemId').addEventListener('input', function() {
         const match = dbBarangData.find(i => String(i["Item ID"]).trim() === this.value.trim());
         if(match) {
@@ -304,7 +316,6 @@
         }
       });
 
-      // Autofill Sugesti untuk Suku Cadang Terpakai di Form WO
       document.getElementById('matItemId').addEventListener('input', function() {
         const match = dbBarangData.find(i => String(i["Item ID"]).trim() === this.value.trim());
         if(match) {
@@ -315,8 +326,8 @@
         }
       });
 
-      // Submit Form WO Baru ATAU Close Kasus WO
-      document.getElementById('mainWOForm').addEventListener('submit', function(e){
+      // Handler Submit Form WO
+      document.getElementById('mainWOForm').addEventListener('submit', async function(e){
         e.preventDefault();
         showLoading(true, "Sinkronisasi Server Transaksi...");
 
@@ -330,7 +341,6 @@
           deskripsi: document.getElementById('inDeskripsi').value,
           jamMulai: document.getElementById('inJamMulai').value,
           status: document.getElementById('inStatusBD').value,
-          
           jamSelesai: document.getElementById('inJamSelesai').value || "",
           statusKerja: document.getElementById('inStatusKerja').value || "Belum Selesai",
           descKerja: document.getElementById('inDescKerja').value || "",
@@ -344,27 +354,21 @@
 
         let actionType = isEditMode ? "close" : "create";
         
-        // Menggunakan google.script.run yang merupakan native & bergaransi bekerja di Apps Script Environment
-        google.script.run.withSuccessHandler(function(response) {
-          showLoading(false);
-          let resParsed = JSON.parse(response);
-          if (resParsed.status === "success") {
-            alert("Data Transaksi WO Berhasil Diperbarui!");
-            modalWOObj.hide();
-            document.getElementById('mainWOForm').reset();
-            currentMaterials = [];
-            refreshAllData();
-          } else {
-            alert("Error: " + resParsed.message);
-          }
-        }).withFailureHandler(function(err) {
-          showLoading(false);
-          alert("Gagal koneksi ke server script: " + err);
-        }).doPost({postData: {contents: JSON.stringify({action: actionType, data: payload})}});
+        let res = await sampaikanKeServer(actionType, payload);
+        showLoading(false);
+        if(res.status === "success") {
+          alert("Data Transaksi WO Berhasil Diperbarui!");
+          modalWOObj.hide();
+          document.getElementById('mainWOForm').reset();
+          currentMaterials = [];
+          refreshAllData();
+        } else {
+          alert("Error Server: " + res.message);
+        }
       });
 
-      // Submit Mendaftarkan Item Baru ke Master
-      document.getElementById('formMasterBarangBaru').addEventListener('submit', function(e) {
+      // Handler Register Item Baru
+      document.getElementById('formMasterBarangBaru').addEventListener('submit', async function(e) {
         e.preventDefault();
         showLoading(true, "Mendaftarkan Item Baru...");
         
@@ -380,22 +384,20 @@
           harga: parseRupiah(document.getElementById('mHarga').value)
         };
 
-        google.script.run.withSuccessHandler(function(response) {
-          showLoading(false);
-          let res = JSON.parse(response);
-          if(res.status === "success") {
-            alert("Berhasil mendaftarkan item baru!");
-            bootstrap.Modal.getInstance(document.getElementById('modalMasterBarangBaru')).hide();
-            document.getElementById('formMasterBarangBaru').reset();
-            refreshAllData();
-          } else {
-            alert("Error: " + res.message);
-          }
-        }).doPost({postData: {contents: JSON.stringify({action: "add_new_item", data: payload})}});
+        let res = await sampaikanKeServer("add_new_item", payload);
+        showLoading(false);
+        if(res.status === "success") {
+          alert("Berhasil mendaftarkan item baru!");
+          bootstrap.Modal.getInstance(document.getElementById('modalMasterBarangBaru')).hide();
+          document.getElementById('formMasterBarangBaru').reset();
+          refreshAllData();
+        } else {
+          alert("Error Server: " + res.message);
+        }
       });
 
-      // Submit Log Transaksi Barang Masuk (Restock)
-      document.getElementById('formBarangMasuk').addEventListener('submit', function(e) {
+      // Handler Log Barang Masuk
+      document.getElementById('formBarangMasuk').addEventListener('submit', async function(e) {
         e.preventDefault();
         showLoading(true, "Memproses Restock Logistik...");
         
@@ -412,45 +414,35 @@
           price: parseRupiah(document.getElementById('bmPrice').value)
         };
 
-        google.script.run.withSuccessHandler(function(response) {
-          showLoading(false);
-          let res = JSON.parse(response);
-          if(res.status === "success") {
-            alert("Stok barang berhasil ditambahkan!");
-            bootstrap.Modal.getInstance(document.getElementById('modalBarangMasuk')).hide();
-            document.getElementById('formBarangMasuk').reset();
-            refreshAllData();
-          } else {
-            alert("Error: " + res.message);
-          }
-        }).doPost({postData: {contents: JSON.stringify({action: "restock_inventory", data: payload})}});
+        let res = await sampaikanKeServer("restock_inventory", payload);
+        showLoading(false);
+        if(res.status === "success") {
+          alert("Stok barang berhasil ditambahkan!");
+          bootstrap.Modal.getInstance(document.getElementById('modalBarangMasuk')).hide();
+          document.getElementById('formBarangMasuk').reset();
+          refreshAllData();
+        } else {
+          alert("Error Server: " + res.message);
+        }
       });
     });
 
-    /* =========================
-       ENGINE INTERNAL CORE INTERACTION
-    ========================= */
-    function refreshAllData() {
+    // Sinkronisasi Mengambil Data Menggunakan Fetch API
+    async function refreshAllData() {
       showLoading(true, "Sinkronisasi Database...");
       
-      // Ambil data WO & Data Inventory secara Paralel menggunakan Native API
-      google.script.run.withSuccessHandler(function(responseWO) {
-        let resWO = JSON.parse(responseWO);
-        if(resWO.status === "success") {
-          woData = resWO.data || [];
-          renderWOTables();
-        }
-        
-        google.script.run.withSuccessHandler(function(responseInv) {
-          showLoading(false);
-          let resInv = JSON.parse(responseInv);
-          if(resInv.status === "success") {
-            dbBarangData = resInv.data || [];
-            renderInventoryTable(dbBarangData);
-          }
-        }).doPost({postData: {contents: JSON.stringify({action: "read_inventory"})}});
-
-      }).doPost({postData: {contents: JSON.stringify({action: "read_wo"})}});
+      let resWO = await sampaikanKeServer("read_wo");
+      if(resWO.status === "success") {
+        woData = resWO.data || [];
+        renderWOTables();
+      }
+      
+      let resInv = await sampaikanKeServer("read_inventory");
+      showLoading(false);
+      if(resInv.status === "success") {
+        dbBarangData = resInv.data || [];
+        renderInventoryTable(dbBarangData);
+      }
     }
 
     function toggleWOFields(disable) {
@@ -462,9 +454,6 @@
       document.getElementById('inStatusBD').disabled = disable;
     }
 
-    /* =========================
-       DOM RENDER MANAGEMENT
-    ========================= */
     function renderInventoryTable(data) {
       const tbody = document.getElementById("dbBarangTableBody");
       const datalist = document.getElementById("itemIdSuggest");
@@ -574,7 +563,6 @@
 
       document.getElementById('modalWOTitle').innerText = "Form Penutupan Kasus WO: " + nowo;
       
-      // Load data awal breakdown ke form
       document.getElementById('inNoWo').value = wo.nowo;
       document.getElementById('inTanggal').value = wo.tanggal;
       document.getElementById('inUnit').value = wo.unit;
@@ -585,19 +573,14 @@
       document.getElementById('inJamMulai').value = wo.jamMulai;
       document.getElementById('inStatusBD').value = "RFU";
       
-      // Kunci data utama agar user fokus mengisi formulir closing
       toggleWOFields(true);
 
-      // Munculkan formulir close out
       currentMaterials = [];
       renderMaterialSubTable();
       document.getElementById('closeWOPanel').classList.remove('d-none');
       modalWOObj.show();
     };
 
-    /* =========================
-       HELPER SYSTEM UTILITIES
-    ========================= */
     window.switchTab = function(tabName) {
       const menuWo = document.getElementById('menu-plant');
       const menuInv = document.getElementById('menu-inventory');
