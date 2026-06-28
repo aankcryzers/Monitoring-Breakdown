@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>PLANT - WO Management</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="https://fonts.googleapis.com/css?family=Montserrat:700,400&display=swap" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+  <meta charset="utf-8" />
+  <title>PLANT - WO & Inventory Management</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css?family=Montserrat:700,400&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
   <style>
     :root {
       --main-bg: #1a1c28;
@@ -16,818 +16,505 @@
       --text: #eaeefd;
       --muted: #95a2c7;
       --primary: #29a8ff;
-      --shadow: 0 4px 24px #0004;
-      --radius: 14px;
-      --accent: #2fc4f9;
       --danger: #ec5555;
       --success: #34d399;
+      --accent: #2fc4f9;
       font-size: 15px;
     }
-    html, body { background: var(--main-bg); color: var(--text); font-family: 'Montserrat', Arial, sans-serif; min-height: 100vh;}
-    body {overflow-x:hidden;}
-    .sidebar {
-      position: fixed; top: 0; left: 0; bottom: 0;
-      width: 220px; background: var(--sidebar-bg);
-      color: var(--text); z-index: 2000; box-shadow: var(--shadow);
-      transition: left 0.23s;
-      display: flex; flex-direction: column;
-    }
-    .sidebar.hide { left: -220px; }
-    .sidebar .brand { font-size:1.22em; font-weight:700; padding:20px 0 8px 0; text-align:center; background: var(--card-bg);}
-    .sidebar .nav-link { color: var(--text); font-weight:600; padding:12px 24px; border-radius:7px 0 0 7px;}
-    .sidebar .nav-link.active, .sidebar .nav-link:hover { background: var(--primary); color: #fff;}
-    .sidebar .nav {margin-top:18px; flex:1 1 auto;}
-    .sidebar .nav-sep {border-bottom:1px solid #313258; margin:0 18px 9px 18px;}
-    .sidebar-toggle-btn {
-      position: absolute; top: 17px; right: -32px; background: var(--primary); color: #fff; border:none; border-radius:0 14px 14px 0; width:32px; height:32px; z-index:9999; cursor:pointer;
-    }
-    .main-container { margin-left:220px; transition: margin-left .23s; max-width:none; padding: 20px;}
-    .sidebar.hide ~ .main-container { margin-left:0; }
-    @media (max-width: 800px){
-      .sidebar, .sidebar.hide {left:-220px;}
-      .sidebar.show {left:0;}
-      .main-container { margin-left:0;}
-    }
-    .dashboard-title { font-size: 1.45em; font-weight: 700; color: var(--text); margin-bottom: 20px;}
-    .section-title { font-size: 1.15em; font-weight: 600; color: var(--muted); margin-top:32px; margin-bottom:9px;}
-    .btn-main { background: var(--primary)!important; border: none; color: #fff!important; font-weight: 600; border-radius: 7px; padding: 7px 22px;}
-    .btn-main:active, .btn-main:focus, .btn-main:hover { background: var(--accent)!important; color: #fff!important;}
-    .export-btn { margin-bottom: 10px; float:right;}
-    .main-table { background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--shadow); color: var(--text); font-size: 1em; width: 100%; margin-bottom: 32px;}
-    .main-table th, .main-table td { border: none; padding: 10px 12px; white-space: nowrap; vertical-align: middle;}
-    .main-table thead {background: #212234;}
-    .main-table tr {border-bottom: 1px solid #23243a;}
-    .main-table .btn-action { color: var(--primary); background: none; border: none; cursor: pointer; font-size: 1.1em; margin-right: 5px;}
-    .main-table .btn-action:last-child {margin-right:0;}
-    .form-label {color: var(--muted); margin-bottom: 4px;}
-    .form-group { margin-bottom: 14px; }
-    .form-control, .form-select { background: var(--input-bg)!important; color: var(--text)!important; border: 1.5px solid #313258;}
-    .material-horizontal-row { display: flex; flex-wrap: nowrap; align-items: flex-end; margin-bottom: 10px; gap: 10px;}
-    .material-horizontal-row > .material-col {display: flex; flex-direction: column; min-width: 90px;}
-    .material-horizontal-row label {margin-bottom:2px;}
-    @media (max-width:1100px){
-      .material-horizontal-row {flex-wrap:wrap;}
-    }
-    .manpower-list, .material-list { margin-bottom: 7px; display: flex; flex-wrap: wrap; gap: 5px;}
-    .manpower-list span, .material-list span { background: #23243c; border-radius: 7px; padding: 4px 8px; font-size: 0.95em; display: inline-flex; align-items: center; gap: 6px;}
-    .modal-content { background: var(--main-bg); color: var(--text); border-radius: 10px; border: 1px solid #24253a;}
-    .modal-footer .btn {border-radius: 6px;}
-    .modal-backdrop {background: #181928b0;}
-    .cursor-pointer { cursor: pointer; }
-    .d-none {display:none!important;}
-    .menu-mobile-trigger {display:none;}
-    @media (max-width: 800px){
-      .menu-mobile-trigger {display:block;position:fixed;top:17px;left:10px;z-index:3001;border:none;background:var(--primary);color:#fff;width:36px;height:36px;border-radius:10px;}
-    }
-    .loading-overlay { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.6); z-index:9999; display:none; align-items:center; justify-content:center; flex-direction:column; }
+    html, body { background: var(--main-bg); color: var(--text); font-family: 'Montserrat', Arial, sans-serif; overflow-x: hidden; }
+    .sidebar { width: 260px; background: var(--sidebar-bg); height: 100vh; position: fixed; top:0; left:0; padding: 20px; border-right: 1px solid #2e304e; z-index: 100; }
+    .sidebar-brand { font-size: 1.3rem; font-weight: 700; color: var(--primary); margin-bottom: 30px; display: flex; align-items: center; gap: 10px; }
+    .nav-link { color: var(--muted); font-weight: 700; padding: 12px 15px; border-radius: 10px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; transition: all 0.2s; text-decoration: none; }
+    .nav-link:hover, .nav-link.active { background: rgba(41, 168, 255, 0.1); color: var(--text); }
+    .nav-link.active { border-left: 4px solid var(--primary); }
+    .main-container { margin-left: 260px; padding: 30px; min-height: 100vh; }
+    .dashboard-title { font-size: 1.6rem; font-weight: 700; color: var(--text); margin-bottom: 25px; }
+    .section-title { font-size: 1.1rem; font-weight: 700; color: var(--accent); margin-top: 30px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .main-table { width: 100%; border-collapse: separate; border-spacing: 0; background: var(--card-bg); border-radius: 14px; overflow: hidden; border: 1px solid #2e304e; margin-bottom: 20px; text-align: left; vertical-align: middle; }
+    .main-table th { background: #1f2035; color: var(--muted); font-weight: 700; padding: 14px 16px; border-bottom: 1px solid #2e304e; font-size: 0.85rem; text-transform: uppercase; }
+    .main-table td { padding: 14px 16px; border-bottom: 1px solid #2e304e; font-size: 0.9rem; color: var(--text); }
+    .main-table tr:last-child td { border-bottom: none; }
+    .btn-main { background: var(--primary); color: #fff; font-weight: 700; border-radius: 10px; padding: 8px 20px; border: none; transition: all 0.2s; }
+    .btn-main:hover { opacity: 0.9; color: #fff; }
+    .form-control, .form-select { background: var(--input-bg); border: 1px solid #2e304e; color: var(--text); border-radius: 10px; padding: 10px 14px; font-size: 0.95rem; }
+    .form-control:focus, .form-select:focus { background: var(--input-bg); border-color: var(--primary); color: var(--text); box-shadow: none; }
+    .form-label { font-weight: 700; font-size: 0.85rem; color: var(--muted); margin-bottom: 6px; }
+    .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(26,28,40,0.8); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 15px; }
+    .spinner { width: 50px; height: 50px; border: 5px solid #2e304e; border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
 
-<div class="loading-overlay" id="loadingOverlay">
-  <div class="spinner-border text-primary" role="status"></div>
-  <span class="mt-2 fw-semibold">Memproses Data ke Spreadsheet...</span>
-</div>
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <div class="fw-bold text-light" id="loadingText">Sinkronisasi Server Tambang...</div>
+  </div>
 
-<button class="menu-mobile-trigger" id="sidebarMobileBtn"><i class="fa fa-bars"></i></button>
-<div class="sidebar" id="sidebar">
-  <div class="brand">PLANT</div>
-  <button class="sidebar-toggle-btn" id="sidebarToggleBtn"><i class="fa fa-angle-left"></i></button>
-  <ul class="nav flex-column">
-    <li><a href="#" class="nav-link active" id="menu-plant"><i class="fa fa-industry"></i> WO</a></li>
-  </ul>
-  <div class="nav-sep"></div>
-  <div style="padding: 12px 18px; color:var(--muted); font-size:0.93em;">PT Sample Plant System</div>
-</div>
+  <!-- SIDEBAR NAVIGATION -->
+  <div class="sidebar">
+    <div class="sidebar-brand"><i class="fa fa-helmet-safety text-warning"></i> PLANT SYSTEM</div>
+    <ul class="nav flex-column p-0 m-0">
+      <li><a href="#" class="nav-link active" id="menu-plant" onclick="switchTab('wo')"><i class="fa fa-industry"></i> WO Breakdown</a></li>
+      <li><a href="#" class="nav-link" id="menu-inventory" onclick="switchTab('inventory')"><i class="fa fa-boxes-stacked"></i> Database Gudang</a></li>
+    </ul>
+  </div>
 
-<div class="main-container" id="mainApp">
-  <div id="plant-wo-content">
-    <div id="wo-list-section">
+  <!-- MAIN APPS SURFACE -->
+  <div class="main-container" id="mainApp">
+    
+    <!-- INTERFACES 1: WO BREAKDOWN SCREEN -->
+    <div id="plant-wo-content">
       <div class="dashboard-title d-flex justify-content-between align-items-center">
-        <span>List WO</span>
-        <button class="btn btn-main" id="btnShowFormWO"><i class="fa fa-plus"></i> Form WO</button>
+        <span>Monitoring & Penanganan Work Order</span>
+        <button class="btn btn-main" id="btnShowFormWO" data-bs-toggle="modal" data-bs-target="#modalFormWO"><i class="fa fa-plus"></i> Buat WO Baru</button>
       </div>
-      <button class="btn btn-success export-btn" id="exportExcelBtn"><i class="fa fa-file-excel"></i> Export Excel</button>
-      
-      <div class="section-title">OPEN Breakdown</div>
+
+      <div class="section-title text-danger"><i class="fa fa-folder-open"></i> OPEN Breakdown</div>
       <div class="table-responsive">
-        <table class="main-table" id="mainTableOpen">
+        <table class="main-table">
           <thead>
             <tr>
-              <th>No</th>
-              <th>No WO</th>
-              <th>Tanggal</th>
-              <th>Unit</th>
-              <th>Type</th>
-              <th>Komponen</th>
-              <th>Sub Komponen</th>
-              <th>Deskripsi</th>
-              <th>Jam Mulai</th>
-              <th>Status Case</th>
-              <th>Aksi</th>
+              <th>No WO</th><th>Tanggal</th><th>Unit/CN</th><th>Type</th><th>Komponen</th><th>Deskripsi Kasus</th><th>Jam Mulai</th><th>Aksi</th>
             </tr>
           </thead>
           <tbody id="mainTableBodyOpen"></tbody>
         </table>
       </div>
-      
-      <div class="section-title">CLOSE Breakdown</div>
+
+      <div class="section-title text-success"><i class="fa fa-folder-closed"></i> CLOSE / RFU Logs</div>
       <div class="table-responsive">
-        <table class="main-table" id="mainTableClose">
+        <table class="main-table">
           <thead>
             <tr>
-              <th>No</th>
-              <th>No WO</th>
-              <th>Tanggal</th>
-              <th>Unit</th>
-              <th>Type</th>
-              <th>Komponen</th>
-              <th>Sub Komponen</th>
-              <th>Deskripsi</th>
-              <th>Jam Mulai</th>
-              <th>Jam Selesai</th>
-              <th>Durasi (mnt)</th>
-              <th>Manpower</th>
-              <th>Sparepart</th>
-              <th>Part No</th>
-              <th>Qty</th>
-              <th>Status Mat</th>
-              <th>Status BD</th>
-              <th>Aksi</th>
+              <th>No WO</th><th>Unit/CN</th><th>Komponen</th><th>Jam Selesai</th><th>Durasi (Mnt)</th><th>Manpower</th><th>Item ID / Part No</th><th>Sparepart</th><th>Qty</th><th>Status Mat</th><th>Status BD</th><th>Aksi</th>
             </tr>
           </thead>
           <tbody id="mainTableBodyClose"></tbody>
         </table>
       </div>
     </div>
-  </div>
-</div>
 
-<!-- Modal Form WO (New) -->
-<div class="modal fade modal-formwo" id="modalFormWO" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content">
-      <form id="bdForm" autocomplete="off">
-        <div class="modal-header">
-          <h5 class="modal-title">Form New WO</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <div class="form-group">
-            <label class="form-label">No WO (Otomatis)</label>
-            <input type="text" class="form-control" name="nowo" id="inputNoWO" readonly>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Tanggal</label>
-            <input type="date" class="form-control" name="tanggal" required>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Unit / CN</label>
-            <select class="form-select" name="unit" id="formUnitSelect" required>
-              <option value="">--Pilih Unit--</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Type Unit</label>
-            <input type="text" class="form-control" name="type" id="formTypeSelect" readonly>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Jam Mulai Breakdown</label>
-            <input type="time" class="form-control" name="jamMulai" required>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Komponen</label>
-            <input type="text" class="form-control" name="komponen" id="formKomponenInput" list="komponenSuggest" required>
-            <datalist id="komponenSuggest"></datalist>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Sub Komponen</label>
-            <input type="text" class="form-control" name="subkomponen" id="formSubkomponenInput" list="subkomponenSuggest" required>
-            <datalist id="subkomponenSuggest"></datalist>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Info BD</label>
-            <input type="text" class="form-control" name="deskripsi" required>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Status Pekerjaan</label>
-            <select class="form-select" name="statusPekerjaan" required>
-              <option value="">--Pilih Status--</option>
-              <option value="Progres">Progres</option>
-              <option value="Pending">Pending</option>
-            </select>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="submit" class="btn btn-main">Simpan WO</button>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-        </div>
-      </form>
+    <!-- INTERFACES 2: INVENTORY LOGISTICS DATABASE -->
+    <div id="inventory-content" class="d-none">
+      <div class="dashboard-title d-flex justify-content-between align-items-center">
+        <span>Logistik Suku Cadang Alat Berat</span>
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalBarangMasuk"><i class="fa fa-cart-plus"></i> Input Barang Masuk (Vendor)</button>
+      </div>
+      <div class="table-responsive">
+        <table class="main-table">
+          <thead>
+            <tr>
+              <th>Item ID</th><th>Nama Item</th><th>Part No</th><th>Persamaan 1 / 2</th><th>Satuan</th><th>Kategori</th><th>Physical Stock</th><th>Available Stock</th><th>Harga Update</th>
+            </tr>
+          </thead>
+          <tbody id="dbBarangTableBody"></tbody>
+        </table>
+      </div>
     </div>
-  </div>
-</div>
 
-<!-- Modal CLOSE WO & EDIT RFU -->
-<div class="modal fade" id="modalCloseWO" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content" style="background:#23243c;">
-      <div class="modal-header">
-        <h5 class="modal-title" id="closeModalTitle">Close WO: RFU, Manpower, Material</h5>
-        <button type="button" class="btn-close" style="background:var(--danger);" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <div class="mb-3">
-          <label class="form-label">Jam Selesai (RFU):</label>
-          <input type="time" class="form-control" id="inputCloseTime" required>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Deskripsi Pekerjaan</label>
-          <input type="text" class="form-control" id="inputCloseDescPekerjaan" placeholder="Uraikan proses/hasil pekerjaan">
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Manpower Terlibat</label>
-          <div id="manpowerListClose" class="manpower-list mb-2"></div>
-          <div style="display:flex;align-items:end;gap:10px;">
-            <input type="text" class="form-control" style="max-width:220px;" id="formManpowerInputClose" list="manpowerSuggest">
-            <datalist id="manpowerSuggest"></datalist>
-            <button type="button" class="btn btn-success btn-sm" id="btnAddManpowerClose"><i class="fa fa-plus"></i></button>
+  </div>
+
+  <!-- MODAL: INPUT BARANG MASUK (RESTOCK VENDOR) -->
+  <div class="modal fade" id="modalBarangMasuk" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content" style="background: var(--card-bg); border: 1px solid #2e304e;">
+        <form id="formBarangMasuk" autocomplete="off">
+          <div class="modal-header border-secondary">
+            <h5 class="modal-title text-success"><i class="fa fa-truck-loading"></i> Catat Logistik Masuk</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
           </div>
-        </div>
-        <div>
-          <label class="form-label">Sparepart / Material Request</label>
-          <div id="materialListClose" class="material-list mb-2"></div>
-          <div class="material-horizontal-row">
-            <div class="material-col">
-              <label class="form-label">Sparepart</label>
-              <input type="text" class="form-control" id="formMaterialInputClose" list="materialSuggest">
-              <datalist id="materialSuggest"></datalist>
+          <div class="modal-body">
+            <div class="row">
+              <div class="col-md-6 mb-2"><label class="form-label">Tanggal Beli</label><input type="date" class="form-control" id="bmDate" required></div>
+              <div class="col-md-6 mb-2"><label class="form-label">Item ID</label><input type="text" class="form-control" id="bmItemId" list="itemIdSuggest" placeholder="Contoh: ITM-001" required></div>
             </div>
-            <div class="material-col">
-              <label class="form-label">Part No</label>
-              <input type="text" class="form-control" id="inputPartNoClose" placeholder="Part No">
+            <div class="mb-2"><label class="form-label">Nama Item</label><input type="text" class="form-control" id="bmItem" required></div>
+            <div class="row">
+              <div class="col-md-6 mb-2"><label class="form-label">Part No</label><input type="text" class="form-control" id="bmPartNo" required></div>
+              <div class="col-md-6 mb-2"><label class="form-label">Merk / Brand</label><input type="text" class="form-control" id="bmMerk" placeholder="OEM / Genuine"></div>
             </div>
-            <div class="material-col">
-              <label class="form-label">Qty</label>
-              <input type="number" class="form-control" id="inputQtyClose" value="1" min="1">
+            <div class="mb-2"><label class="form-label">Vendor / Supplier</label><input type="text" class="form-control" id="bmVendor" required></div>
+            <div class="row">
+              <div class="col-md-4 mb-2"><label class="form-label">Qty</label><input type="number" class="form-control" id="bmQty" value="1" min="1" required></div>
+              <div class="col-md-4 mb-2"><label class="form-label">Satuan</label><input type="text" class="form-control" id="bmSatuan" placeholder="pcs" required></div>
+              <div class="col-md-4 mb-2"><label class="form-label">Kategori</label><input type="text" class="form-control" id="bmKategori" placeholder="Filter"></div>
             </div>
-            <div class="material-col">
-              <label class="form-label">Satuan</label>
-              <select class="form-select" id="inputSatuanClose">
-                <option value="pcs">pcs</option>
-                <option value="set">set</option>
-                <option value="unit">unit</option>
-                <option value="liter">liter</option>
-                <option value="meter">meter</option>
-              </select>
-            </div>
-            <div class="material-col">
-              <label class="form-label">Harga</label>
-              <input type="text" class="form-control" id="inputHargaClose" value="Rp 0">
-            </div>
-            <div class="material-col">
-              <label class="form-label">Total Harga</label>
-              <input type="text" class="form-control" id="inputTotalHargaClose" value="Rp 0" readonly>
-            </div>
-            <div class="material-col">
-              <label class="form-label">Status Material</label>
-              <select class="form-select" id="inputStatusMaterialClose">
-                <option value="Terinstal">Terinstal</option>
-                <option value="Pending">Pending</option>
-              </select>
-            </div>
-            <div class="material-col">
-              <button type="button" class="btn btn-success btn-sm" id="btnAddMaterialClose"><i class="fa fa-plus"></i></button>
-            </div>
+            <div class="mb-2"><label class="form-label">Harga Satuan</label><input type="text" class="form-control" id="bmPrice" value="Rp 0" required></div>
           </div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-main" id="btnCloseWO">Simpan Data Close</button>
+          <div class="modal-footer border-secondary">
+            <button type="submit" class="btn btn-success w-100">Simpan Log Masuk & Sinkronisasi Stok</button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
-</div>
 
-<!-- Modal Login Admin -->
-<div class="modal fade" id="modalLoginEdit" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content" style="background:#23243c;">
-      <div class="modal-header">
-        <h5 class="modal-title" id="loginModalTitle">Login Admin</h5>
-        <button type="button" class="btn-close" style="background:var(--danger);" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <div class="mb-2">
-          <label class="form-label">Username:</label>
-          <input type="text" class="form-control" id="loginEditUser">
-        </div>
-        <div class="mb-2">
-          <label class="form-label">Password:</label>
-          <input type="password" class="form-control" id="loginEditPass">
-        </div>
-        <div class="form-text text-danger d-none" id="loginEditError">Username atau password salah.</div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-main" id="btnLoginEditWO">Login</button>
+  <!-- MODAL MASTER CONTROL: FORM INPUT & CLOSE WORK ORDER -->
+  <div class="modal fade" id="modalFormWO" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content" style="background: var(--card-bg); border: 1px solid #2e304e;">
+        <form id="mainWOForm" autocomplete="off">
+          <div class="modal-header border-secondary">
+            <h5 class="modal-title" id="modalWOTitle">Form Input Operasional WO</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body" style="max-height: 75vh; overflow-y: auto;">
+            <div class="row">
+              <div class="col-md-4 mb-2"><label class="form-label">No WO</label><input type="text" class="form-control" id="inNoWo" required></div>
+              <div class="col-md-4 mb-2"><label class="form-label">Tanggal</label><input type="date" class="form-control" id="inTanggal" required></div>
+              <div class="col-md-4 mb-2"><label class="form-label">Unit/CN</label><input type="text" class="form-control" id="inUnit" required></div>
+            </div>
+            <div class="row">
+              <div class="col-md-4 mb-2"><label class="form-label">Type Unit</label><input type="text" class="form-control" id="inType" required></div>
+              <div class="col-md-4 mb-2"><label class="form-label">Komponen</label><input type="text" class="form-control" id="inKomponen" required></div>
+              <div class="col-md-4 mb-2"><label class="form-label">Sub Komponen</label><input type="text" class="form-control" id="inSubKomponen"></div>
+            </div>
+            <div class="mb-2"><label class="form-label">Deskripsi Kerusakan Awal</label><textarea class="form-control" id="inDeskripsi" rows="2" required></textarea></div>
+            <div class="row">
+              <div class="col-md-6 mb-2"><label class="form-label">Jam Mulai Breakdown</label><input type="time" class="form-control" id="inJamMulai" required></div>
+              <div class="col-md-6 mb-2"><label class="form-label">Status Breakdown Case</label><select class="form-select" id="inStatusBD"><option value="Breakdown">Breakdown</option><option value="RFU">RFU</option></select></div>
+            </div>
+            
+            <!-- BLOK EXTRA UNTUK CLOSE TRANS-WO -->
+            <div id="closeWOPanel" class="p-3 my-3 border border-secondary rounded bg-dark">
+              <h6 class="text-warning mb-3"><i class="fa fa-wrench"></i> Formulir Penutupan Kasus (Close RFU)</h6>
+              <div class="row">
+                <div class="col-md-6 mb-2"><label class="form-label">Jam Selesai Perbaikan</label><input type="time" class="form-control" id="inJamSelesai"></div>
+                <div class="col-md-6 mb-2"><label class="form-label">Status Hasil Pekerjaan</label><select class="form-select" id="inStatusKerja"><option value="Belum Selesai">Belum Selesai</option><option value="Selesai">Selesai (RFU)</option></select></div>
+              </div>
+              <div class="mb-2"><label class="form-label">Deskripsi Tindakan Lapangan</label><textarea class="form-control" id="inDescKerja" rows="2"></textarea></div>
+              <div class="mb-3"><label class="form-label">Manpower (Gunakan Koma)</label><input type="text" class="form-control" id="inManpower" placeholder="Budi, Joko, Andi"></div>
+              
+              <!-- SUB-FORM MATERIAL / SPAREPART INSTALASI -->
+              <div class="border border-secondary p-2 rounded bg-secondary-subtle">
+                <span class="d-block small text-info fw-bold mb-2">Input Suku Cadang Terpakai (Part Instal)</span>
+                <div class="row g-2">
+                  <div class="col-md-3"><input type="text" class="form-control form-control-sm" id="matItemId" list="itemIdSuggest" placeholder="Item ID"></div>
+                  <div class="col-md-3"><input type="text" class="form-control form-control-sm" id="matNama" placeholder="Nama Barang"></div>
+                  <div class="col-md-3"><input type="text" class="form-control form-control-sm" id="matPartNo" placeholder="Part No"></div>
+                  <div class="col-md-1"><input type="number" class="form-control form-control-sm" id="matQty" value="1" min="1"></div>
+                  <div class="col-md-2"><input type="text" class="form-control form-control-sm" id="matSatuan" placeholder="pcs"></div>
+                </div>
+                <div class="row g-2 mt-1">
+                  <div class="col-md-4"><input type="text" class="form-control form-control-sm" id="matHarga" placeholder="Harga Rp 0"></div>
+                  <div class="col-md-4"><select class="form-select form-select-sm" id="matStatusMat"><option value="Terinstal">Terinstal</option><option value="Booking">Booking</option></select></div>
+                  <div class="col-md-4"><button type="button" class="btn btn-info btn-sm w-100 fw-bold" id="btnAddMaterial">Pasang Part</button></div>
+                </div>
+                <div class="table-responsive mt-2">
+                  <table class="table table-dark table-sm small m-0">
+                    <thead><tr><th>Item ID</th><th>Nama Barang</th><th>Part No</th><th>Qty</th><th>Harga</th><th>Status</th><th>Aksi</th></tr></thead>
+                    <tbody id="materialListTableBody"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer border-secondary">
+            <button type="submit" class="btn btn-main w-100" id="btnSubmitWO">Simpan Data Transaksi</button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
-</div>
 
-<!-- Modal Edit WO Open -->
-<div class="modal fade" id="modalEditWO" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content">
-      <form id="editFormWO" autocomplete="off">
-        <div class="modal-header">
-          <h5 class="modal-title">Edit Data WO Open</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <input type="hidden" id="editIdxWO">
-          <div class="form-group">
-            <label class="form-label">No WO</label>
-            <input type="text" class="form-control" id="editNoWO" readonly>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Tanggal</label>
-            <input type="date" class="form-control" id="editTanggal" required>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Unit / CN</label>
-            <select class="form-select" id="editUnit" required></select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Type Unit</label>
-            <input type="text" class="form-control" id="editType" readonly>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Jam Mulai Breakdown</label>
-            <input type="time" class="form-control" id="editJamMulai" required>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Komponen</label>
-            <input type="text" class="form-control" id="editKomponen" list="komponenSuggest" required>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Sub Komponen</label>
-            <input type="text" class="form-control" id="editSubkomponen" list="subkomponenSuggest" required>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Info BD</label>
-            <input type="text" class="form-control" id="editDeskripsi" required>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Status Pekerjaan</label>
-            <select class="form-select" id="editStatusPekerjaan" required>
-              <option value="Progres">Progres</option>
-              <option value="Pending">Pending</option>
-            </select>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="submit" class="btn btn-main">Simpan Perubahan</button>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
+  <datalist id="itemIdSuggest"></datalist>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
-<script>
-// ==========================================
-// PASTE URL SPREADSHEET APPS SCRIPT ANDA DI SINI
-const SCRIPT_WEB_URL = "https://script.google.com/macros/s/AKfycbw-8Np1rneYt0k3UXnZz25Asqn4oHYih42_GMRHbiTYaMlwmKGe3oXo9j4e4dvkODlkWw/exec";
-// ==========================================
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const SCRIPT_WEB_URL = "https://script.google.com/macros/s/AKfycbw-8Np1rneYt0k3UXnZz25Asqn4oHYih42_GMRHbiTYaMlwmKGe3oXo9j4e4dvkODlkWw/exec";
+    let woData = [];
+    let dbBarangData = [];
+    let currentMaterials = [];
+    let isEditMode = false;
 
-const SPREADSHEET_API = {
-  units: 'https://raw.githubusercontent.com/aankcryzers/Monitoring-Breakdown/main/unit.json'
-};
-
-let breakdownData = [];
-const SUGGEST_KEY = "bd_wo_suggest";
-let suggestData = {};
-let currentAuthAction = ""; // "edit_open", "edit_close", "delete"
-let selectedRowIndex = null;
-
-function showLoading(show) {
-  document.getElementById("loadingOverlay").style.display = show ? "flex" : "none";
-}
-
-function loadSuggest() {
-  suggestData = JSON.parse(localStorage.getItem(SUGGEST_KEY) || '{}');
-  if (!suggestData.komponen) suggestData.komponen = [];
-  if (!suggestData.subkomponen) suggestData.subkomponen = [];
-  if (!suggestData.manpower) suggestData.manpower = [];
-  if (!suggestData.material) suggestData.material = [];
-}
-
-function saveSuggest() {
-  localStorage.setItem(SUGGEST_KEY, JSON.stringify(suggestData));
-}
-
-function addSuggest(type, value) {
-  if (!value) return;
-  if (!suggestData[type].includes(value)) {
-    suggestData[type].push(value);
-    saveSuggest();
-  }
-}
-
-function renderSuggest(type, datalistId) {
-  const data = suggestData[type] || [];
-  const datalist = document.getElementById(datalistId);
-  if(datalist) datalist.innerHTML = data.map(val => `<option value="${val}">`).join('');
-}
-
-function initSuggestDropdowns(){
-  renderSuggest('komponen', 'komponenSuggest');
-  renderSuggest('subkomponen', 'subkomponenSuggest');
-  renderSuggest('manpower', 'manpowerSuggest');
-  renderSuggest('material', 'materialSuggest');
-}
-
-async function fetchSpreadsheetData() {
-  showLoading(true);
-  try {
-    let res = await fetch(SCRIPT_WEB_URL + "?action=read");
-    let json = await res.json();
-    if (json.status === "success") {
-      breakdownData = json.data;
-      renderAllTables();
-      generateNextWO();
-    }
-  } catch (err) {
-    console.error("Gagal memuat data dari Spreadsheet", err);
-  } finally {
-    showLoading(false);
-  }
-}
-
-async function sendToSpreadsheet(action, data) {
-  showLoading(true);
-  try {
-    let res = await fetch(SCRIPT_WEB_URL, {
-      method: "POST",
-      body: JSON.stringify({ action: action, data: data }),
-      headers: { "Content-Type": "text/plain;charset=utf-8" }
-    });
-    let json = await res.json();
-    if(json.status === "success") {
-      await fetchSpreadsheetData();
-    } else {
-      alert("Error script: " + json.message);
-    }
-  } catch (err) {
-    alert("Koneksi gagal ke Spreadsheet!");
-    console.error(err);
-  } finally {
-    showLoading(false);
-  }
-}
-
-async function initUnitDropdown(){
-  try {
-    let res = await fetch(SPREADSHEET_API.units);
-    let unitArr = res.ok ? await res.json() : [{unit:"BSS-75", type:"DUMP TRUCK"}];
-    
-    let unitSel = document.getElementById("formUnitSelect");
-    let editUnitSel = document.getElementById("editUnit");
-    
-    let options = `<option value="">--Pilih Unit--</option>`;
-    unitArr.filter(u => u && (u.unit || u.unit_code)).forEach(u => {
-      let val = u.unit || u.unit_code;
-      options += `<option value="${val}" data-type="${u.type||''}">${val} (${u.type||''})</option>`;
-    });
-    
-    unitSel.innerHTML = options;
-    editUnitSel.innerHTML = options;
-    
-    unitSel.onchange = () => {
-      let opt = unitSel.options[unitSel.selectedIndex];
-      document.getElementById("formTypeSelect").value = opt.getAttribute("data-type") || "";
-    };
-    editUnitSel.onchange = () => {
-      let opt = editUnitSel.options[editUnitSel.selectedIndex];
-      document.getElementById("editType").value = opt.getAttribute("data-type") || "";
-    };
-  } catch(e) { console.error(e); }
-}
-
-function generateNextWO() {
-  let count = breakdownData.length + 1;
-  breakdownData.forEach(r => {
-    let num = parseInt((r.nowo || "").replace("WO-", ""));
-    if(!isNaN(num) && num >= count) count = num + 1;
-  });
-  document.getElementById("inputNoWO").value = "WO-" + String(count).padStart(5, "0");
-}
-
-function formatRupiah(x) {
-  x = typeof x === "number" ? x : x.toString().replace(/[^\d]/g, "");
-  if (!x) return "Rp 0";
-  return "Rp " + x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-}
-function parseRupiah(val) {
-  return Number((val||"").toString().replace(/[^\d]/g, "")) || 0;
-}
-
-loadSuggest();
-initSuggestDropdowns();
-initUnitDropdown();
-
-if(SCRIPT_WEB_URL !== "URL_APPS_SCRIPT_ANDA_DISINI") {
-  fetchSpreadsheetData();
-} else {
-  alert("Harap masukkan URL Apps Script Anda di variabel SCRIPT_WEB_URL!");
-}
-
-const sidebar = document.getElementById("sidebar");
-document.getElementById("sidebarToggleBtn").onclick = () => sidebar.classList.toggle("hide");
-document.getElementById("sidebarMobileBtn").onclick = () => sidebar.classList.toggle("show");
-
-const modalFormWO = new bootstrap.Modal(document.getElementById('modalFormWO'));
-document.getElementById('btnShowFormWO').addEventListener('click', () => {
-  document.getElementById('bdForm').reset();
-  generateNextWO();
-  modalFormWO.show();
-});
-
-document.getElementById("bdForm").addEventListener("submit", function(e) {
-  e.preventDefault();
-  const fd = new FormData(e.target);
-  let row = {
-    nowo: document.getElementById("inputNoWO").value,
-    tanggal: fd.get("tanggal"),
-    unit: fd.get("unit"),
-    type: fd.get("type"),
-    jamMulai: fd.get("jamMulai"),
-    komponen: fd.get("komponen"),
-    subkomponen: fd.get("subkomponen"),
-    deskripsi: fd.get("deskripsi"),
-    statusPekerjaan: fd.get("statusPekerjaan"),
-    descPekerjaan: "",
-    manpowerArr: [],
-    materialArr: [],
-    status: "OPEN",
-    durasiMenit: "",
-    jamSelesai: ""
-  };
-  addSuggest('komponen', row.komponen);
-  addSuggest('subkomponen', row.subkomponen);
-  modalFormWO.hide();
-  sendToSpreadsheet("create", row);
-});
-
-// Close / RFU Logic 
-let idxWOClose = null;
-let formManpowerArrClose = [];
-let formMaterialArrClose = [];
-
-window.openCloseWOModal = function(idx) {
-  idxWOClose = idx;
-  formManpowerArrClose = [];
-  formMaterialArrClose = [];
-  document.getElementById('closeModalTitle').innerText = "Close WO: RFU, Manpower, Material";
-  document.getElementById('inputCloseTime').value = "";
-  document.getElementById('inputCloseDescPekerjaan').value = "";
-  refreshManpowerListClose();
-  refreshMaterialListClose();
-  new bootstrap.Modal(document.getElementById('modalCloseWO')).show();
-};
-
-function refreshManpowerListClose() {
-  document.getElementById("manpowerListClose").innerHTML = formManpowerArrClose.map((m,i)=>`<span>${m} <i class="fa fa-times text-danger cursor-pointer" onclick="formManpowerArrClose.splice(${i},1);refreshManpowerListClose();"></i></span>`).join("");
-}
-
-function refreshMaterialListClose() {
-  document.getElementById("materialListClose").innerHTML = formMaterialArrClose.map((m,i)=>`<span>${m.material} (${m.qty} ${m.satuan}) <i class="fa fa-times text-danger cursor-pointer" onclick="formMaterialArrClose.splice(${i},1);refreshMaterialListClose();"></i></span>`).join("");
-}
-
-document.getElementById("btnAddManpowerClose").addEventListener("click", () => {
-  let val = document.getElementById("formManpowerInputClose").value.trim();
-  if(!val || formManpowerArrClose.includes(val)) return;
-  formManpowerArrClose.push(val);
-  addSuggest('manpower', val);
-  refreshManpowerListClose();
-  document.getElementById("formManpowerInputClose").value = "";
-});
-
-document.getElementById("inputHargaClose").addEventListener("input", (e) => {
-  let num = parseRupiah(e.target.value);
-  e.target.value = formatRupiah(num);
-  let qty = Number(document.getElementById("inputQtyClose").value || 0);
-  document.getElementById("inputTotalHargaClose").value = formatRupiah(num * qty);
-});
-
-document.getElementById("btnAddMaterialClose").addEventListener("click", () => {
-  let material = document.getElementById('formMaterialInputClose').value.trim();
-  let qty = Number(document.getElementById('inputQtyClose').value);
-  let satuan = document.getElementById('inputSatuanClose').value;
-  let harga = parseRupiah(document.getElementById('inputHargaClose').value);
-  let partno = document.getElementById('inputPartNoClose').value;
-  let statusMaterial = document.getElementById('inputStatusMaterialClose').value;
-  
-  if(!material || qty <= 0) return;
-  
-  formMaterialArrClose.push({ material, qty, satuan, harga, totalHarga: harga*qty, partno, statusMaterial });
-  addSuggest('material', material);
-  refreshMaterialListClose();
-  
-  document.getElementById('formMaterialInputClose').value = "";
-  document.getElementById('inputPartNoClose').value = "";
-  document.getElementById('inputHargaClose').value = "Rp 0";
-  document.getElementById('inputTotalHargaClose').value = "Rp 0";
-});
-
-document.getElementById('btnCloseWO').addEventListener("click", () => {
-  let time = document.getElementById('inputCloseTime').value;
-  let descPek = document.getElementById('inputCloseDescPekerjaan').value.trim();
-  if(!time) { alert("Isi jam selesai!"); return; }
-  
-  let wo = breakdownData[idxWOClose];
-  wo.jamSelesai = time;
-  wo.descPekerjaan = descPek;
-  
-  let [sh, sm] = (wo.jamMulai || "0:0").split(":").map(x => parseInt(x));
-  let [eh, em] = (time || "0:0").split(":").map(x => parseInt(x));
-  let mins = (eh * 60 + em) - (sh * 60 + sm);
-  if(mins < 0) mins += 24 * 60;
-  
-  wo.durasiMenit = mins;
-  wo.status = "RFU";
-  wo.statusPekerjaan = "Selesai";
-  wo.manpowerArr = [...formManpowerArrClose];
-  wo.materialArr = [...formMaterialArrClose];
-  
-  bootstrap.Modal.getInstance(document.getElementById('modalCloseWO')).hide();
-  sendToSpreadsheet("close", wo);
-});
-
-// Gatekeeper Login Admin (Reusable)
-window.openAuthGate = function(idx, actionType) {
-  selectedRowIndex = idx;
-  currentAuthAction = actionType;
-  document.getElementById("loginEditUser").value = "";
-  document.getElementById("loginEditPass").value = "";
-  document.getElementById("loginEditError").classList.add("d-none");
-  
-  if(actionType === "delete") {
-    document.getElementById("loginModalTitle").innerText = "Login Admin untuk Hapus WO";
-  } else {
-    document.getElementById("loginModalTitle").innerText = "Login Admin untuk Edit WO";
-  }
-  new bootstrap.Modal(document.getElementById('modalLoginEdit')).show();
-};
-
-document.getElementById('btnLoginEditWO').addEventListener('click', () => {
-  let user = document.getElementById("loginEditUser").value.trim();
-  let pass = document.getElementById("loginEditPass").value.trim();
-  
-  if(user === "admin" && pass === "admin") {
-    bootstrap.Modal.getInstance(document.getElementById('modalLoginEdit')).hide();
-    
-    if (currentAuthAction === "edit_open") {
-      executeEditOpenModal(selectedRowIndex);
-    } else if (currentAuthAction === "edit_close") {
-      executeEditCloseModal(selectedRowIndex);
-    } else if (currentAuthAction === "delete") {
-      executeDeleteAction(selectedRowIndex);
-    }
-  } else {
-    document.getElementById("loginEditError").classList.remove("d-none");
-  }
-});
-
-// Fungsi Trigger Aksi setelah lolos Login
-function executeEditOpenModal(idx) {
-  let row = breakdownData[idx];
-  document.getElementById("editIdxWO").value = idx;
-  document.getElementById("editNoWO").value = row.nowo;
-  document.getElementById("editTanggal").value = row.tanggal || "";
-  document.getElementById("editUnit").value = row.unit || "";
-  document.getElementById("editType").value = row.type || "";
-  document.getElementById("editJamMulai").value = row.jamMulai || "";
-  document.getElementById("editKomponen").value = row.komponen || "";
-  document.getElementById("editSubkomponen").value = row.subkomponen || "";
-  document.getElementById("editDeskripsi").value = row.deskripsi || "";
-  document.getElementById("editStatusPekerjaan").value = row.statusPekerjaan || "Progres";
-  new bootstrap.Modal(document.getElementById('modalEditWO')).show();
-}
-
-function executeEditCloseModal(idx) {
-  // Gunakan modal Close WO lama tapi isi variabel arraynya dengan data yang sudah tersimpan
-  idxWOClose = idx;
-  let row = breakdownData[idx];
-  document.getElementById('closeModalTitle').innerText = "Edit Data RFU: " + row.nowo;
-  document.getElementById('inputCloseTime').value = row.jamSelesai || "";
-  document.getElementById('inputCloseDescPekerjaan').value = row.descPekerjaan || "";
-  
-  formManpowerArrClose = [...(row.manpowerArr || [])];
-  formMaterialArrClose = [...(row.materialArr || [])];
-  
-  refreshManpowerListClose();
-  refreshMaterialListClose();
-  new bootstrap.Modal(document.getElementById('modalCloseWO')).show();
-}
-
-function executeDeleteAction(idx) {
-  let row = breakdownData[idx];
-  if(confirm(`Apakah Anda yakin ingin menghapus data ${row.nowo} secara permanen?`)) {
-    sendToSpreadsheet("delete", { nowo: row.nowo });
-  }
-}
-
-document.getElementById("editFormWO").addEventListener("submit", (e) => {
-  e.preventDefault();
-  let idx = Number(document.getElementById("editIdxWO").value);
-  let row = breakdownData[idx];
-  
-  row.tanggal = document.getElementById("editTanggal").value;
-  row.unit = document.getElementById("editUnit").value;
-  row.type = document.getElementById("editType").value;
-  row.jamMulai = document.getElementById("editJamMulai").value;
-  row.komponen = document.getElementById("editKomponen").value;
-  row.subkomponen = document.getElementById("editSubkomponen").value;
-  row.deskripsi = document.getElementById("editDeskripsi").value;
-  row.statusPekerjaan = document.getElementById("editStatusPekerjaan").value;
-  
-  bootstrap.Modal.getInstance(document.getElementById('modalEditWO')).hide();
-  sendToSpreadsheet("update", row);
-});
-
-function renderAllTables() {
-  const tbodyOpen = document.getElementById('mainTableBodyOpen');
-  let dataOpen = breakdownData.filter(row => row.status === "OPEN" || row.status === "");
-  tbodyOpen.innerHTML = dataOpen.map((row,i) => `
-    <tr>
-      <td>${i+1}</td>
-      <td>${row.nowo||''}</td>
-      <td>${row.tanggal||''}</td>
-      <td>${row.unit||''}</td>
-      <td>${row.type||''}</td>
-      <td>${row.komponen||''}</td>
-      <td>${row.subkomponen||''}</td>
-      <td>${row.deskripsi||''}</td>
-      <td>${row.jamMulai||''}</td>
-      <td><span class="badge bg-warning">${row.statusPekerjaan||'Progres'}</span></td>
-      <td>
-        <button type="button" class="btn btn-sm btn-success btn-action" onclick="openCloseWOModal(${breakdownData.indexOf(row)})" title="Close WO"><i class="fa fa-check"></i></button>
-        <button type="button" class="btn btn-sm btn-warning btn-action" onclick="openAuthGate(${breakdownData.indexOf(row)}, 'edit_open')" title="Edit WO Open"><i class="fa fa-edit"></i></button>
-        <button type="button" class="btn btn-sm btn-danger btn-action text-danger" onclick="openAuthGate(${breakdownData.indexOf(row)}, 'delete')" title="Hapus WO"><i class="fa fa-trash"></i></button>
-      </td>
-    </tr>
-  `).join('') || `<tr><td colspan="11" class="text-center text-muted">Belum ada data open</td></tr>`;
-
-  const tbodyClose = document.getElementById('mainTableBodyClose');
-  let dataClose = breakdownData.filter(row => row.status === "RFU");
-  tbodyClose.innerHTML = dataClose.map((row,i) => `
-    <tr>
-      <td>${i+1}</td>
-      <td>${row.nowo||''}</td>
-      <td>${row.tanggal||''}</td>
-      <td>${row.unit||''}</td>
-      <td>${row.type||''}</td>
-      <td>${row.komponen||''}</td>
-      <td>${row.subkomponen||''}</td>
-      <td>${row.deskripsi||''}</td>
-      <td>${row.jamMulai||''}</td>
-      <td>${row.jamSelesai||''}</td>
-      <td>${row.durasiMenit||''}</td>
-      <td>${(row.manpowerArr||[]).join(", ")}</td>
-      <td>${(row.materialArr||[]).map(m=>m.material).join("<br>")}</td>
-      <td>${(row.materialArr||[]).map(m=>m.partno||"-").join('<br>')}</td>
-      <td>${(row.materialArr||[]).map(m=>m.qty).join('<br>')}</td>
-      <td>${(row.materialArr||[]).map(m=>m.statusMaterial||"").join('<br>')}</td>
-      <td><span class="badge bg-success">${row.status||'RFU'}</span></td>
-      <td>
-        <button type="button" class="btn btn-sm btn-warning btn-action" onclick="openAuthGate(${breakdownData.indexOf(row)}, 'edit_close')" title="Edit WO Close"><i class="fa fa-edit"></i></button>
-        <button type="button" class="btn btn-sm btn-danger btn-action text-danger" onclick="openAuthGate(${breakdownData.indexOf(row)}, 'delete')" title="Hapus WO Close"><i class="fa fa-trash"></i></button>
-      </td>
-    </tr>
-  `).join('') || `<tr><td colspan="18" class="text-center text-muted">Belum ada data rfu</td></tr>`;
-}
-
-document.getElementById('exportExcelBtn').addEventListener('click', () => {
-  let rows = [["No", "No WO", "Tanggal", "Unit/CN", "Type", "Komponen", "Sub Komponen", "Deskripsi", "Jam Mulai", "Jam Selesai", "Durasi (menit)", "Manpower", "Status Pekerjaan", "Deskripsi Pekerjaan", "Material/Sparepart", "Part No", "Qty", "Satuan", "Harga", "Total Harga", "Status Material", "Status BD"]];
-  
-  breakdownData.forEach((row, idx) => {
-    if(row.materialArr && row.materialArr.length > 0) {
-      row.materialArr.forEach(mat => {
-        rows.push([idx+1, row.nowo, row.tanggal, row.unit, row.type, row.komponen, row.subkomponen, row.deskripsi, row.jamMulai, row.jamSelesai, row.durasiMenit, row.manpowerArr.join(", "), row.statusPekerjaan, row.descPekerjaan, mat.material, mat.partno, mat.qty, mat.satuan, formatRupiah(mat.harga), formatRupiah(mat.totalHarga), mat.statusMaterial, row.status]);
+    // --- INITIAL APP ENGINE ---
+    window.addEventListener('DOMContentLoaded', () => {
+      fetchSpreadsheetData();
+      fetchInventoryData();
+      
+      document.getElementById('btnShowFormWO').addEventListener('click', () => {
+        isEditMode = false;
+        document.getElementById('modalWOTitle').innerText = "Buat Transaksi WO Baru";
+        document.getElementById('mainWOForm').reset();
+        currentMaterials = [];
+        renderMaterialSubTable();
+        document.getElementById('closeWOPanel').classList.add('d-none');
       });
-    } else {
-      rows.push([idx+1, row.nowo, row.tanggal, row.unit, row.type, row.komponen, row.subkomponen, row.deskripsi, row.jamMulai, row.jamSelesai, row.durasiMenit, row.manpowerArr.join(", "), row.statusPekerjaan, row.descPekerjaan, "", "", "", "", "", "", "", row.status]);
+    });
+
+    window.switchTab = function(tabName) {
+      const menuWo = document.getElementById('menu-plant');
+      const menuInv = document.getElementById('menu-inventory');
+      const contentWo = document.getElementById('plant-wo-content');
+      const contentInv = document.getElementById('inventory-content');
+      if(tabName === 'wo') {
+        menuWo.classList.add('active'); menuInv.classList.remove('active');
+        contentWo.classList.remove('d-none'); contentInv.classList.add('d-none');
+        fetchSpreadsheetData();
+      } else {
+        menuWo.classList.remove('active'); menuInv.classList.add('active');
+        contentWo.classList.add('d-none'); contentInv.classList.remove('d-none');
+        fetchInventoryData();
+      }
+    };
+
+    function showLoading(show, text = "Sinkronisasi Server Tambang...") {
+      const el = document.getElementById('loadingOverlay');
+      document.getElementById('loadingText').innerText = text;
+      show ? el.classList.remove('d-none') : el.classList.add('d-none');
     }
-  });
-  
-  let ws = XLSX.utils.aoa_to_sheet(rows);
-  let wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Breakdown Data");
-  XLSX.writeFile(wb, "Breakdown_Report.xlsx");
-});
-</script>
+
+    // --- SYNC ENGINE DATABASE ---
+    async function fetchSpreadsheetData() {
+      showLoading(true, "Mengambil Data Transaksi WO...");
+      try {
+        let res = await fetch(SCRIPT_WEB_URL + "?action=read");
+        let json = await res.json();
+        if (json.status === "success") { woData = json.data; renderWOTables(); }
+      } catch (err) { console.error(err); } finally { showLoading(false); }
+    }
+
+    async function fetchInventoryData() {
+      try {
+        let res = await fetch(SCRIPT_WEB_URL + "?action=read_inventory");
+        let json = await res.json();
+        if (json.status === "success") { dbBarangData = json.data; renderInventoryTable(); }
+      } catch (err) { console.error(err); }
+    }
+
+    // --- RENDER COMPONENT ENGINE ---
+    function renderInventoryTable() {
+      const tbody = document.getElementById('dbBarangTableBody');
+      const datalist = document.getElementById('itemIdSuggest');
+      
+      tbody.innerHTML = dbBarangData.map(item => {
+        let stock = Number(item["Stock"]) || 0;
+        let avail = Number(item["Available Stock"]) || 0;
+        let style = avail <= 0 ? 'text-danger fw-bold' : (avail <= 2 ? 'text-warning fw-bold' : '');
+        return `
+          <tr>
+            <td class="text-info fw-bold">${item["Item ID"] || ''}</td>
+            <td>${item["Item"] || ''}</td>
+            <td>${item["Part-No"] || ''}</td>
+            <td class="text-muted small">${item["Persamaan1"] || '-'} / ${item["Persamaan2"] || '-'}</td>
+            <td>${item["Satuan"] || ''}</td>
+            <td><span class="badge bg-secondary">${item["Kategori"] || 'General'}</span></td>
+            <td>${stock}</td>
+            <td class="${style}">${avail}</td>
+            <td>${formatRupiah(item["HARGA UPDATE"] || 0)}</td>
+          </tr>
+        `;
+      }).join('') || '<tr><td colspan="9" class="text-center text-muted">Database Kosong</td></tr>';
+
+      if(datalist) {
+        datalist.innerHTML = dbBarangData.map(item => `<option value="${item["Item ID"]}"> ${item["Item"]} [PN: ${item["Part-No"] || '-'}]</option>`).join('');
+      }
+    }
+
+    function renderWOTables() {
+      const tbodyOpen = document.getElementById('mainTableBodyOpen');
+      const tbodyClose = document.getElementById('mainTableBodyClose');
+      let openHtml = "", closeHtml = "";
+
+      woData.forEach(wo => {
+        if(wo.status !== "RFU") {
+          openHtml += `
+            <tr>
+              <td class="fw-bold text-warning">${wo.nowo}</td><td>${wo.tanggal}</td>
+              <td class="fw-bold">${wo.unit}</td><td>${wo.type}</td><td>${wo.komponen}</td>
+              <td>${wo.deskripsi}</td><td>${wo.jamMulai}</td>
+              <td>
+                <button class="btn btn-sm btn-success p-1 px-2" onclick="openFormClose('${wo.nowo}')"><i class="fa fa-check"></i> Close</button>
+              </td>
+            </tr>
+          `;
+        } else {
+          let mats = wo.materialArr && wo.materialArr.length > 0 ? wo.materialArr : [{}];
+          mats.forEach((m, idx) => {
+            closeHtml += `
+              <tr>
+                ${idx === 0 ? `<td rowspan="${mats.length}" class="fw-bold text-success">${wo.nowo}</td><td rowspan="${mats.length}">${wo.unit}</td><td rowspan="${mats.length}">${wo.komponen}</td><td rowspan="${mats.length}">${wo.jamSelesai || ''}</td><td rowspan="${mats.length}">${wo.durasiMenit || ''}</td><td rowspan="${mats.length}" class="small">${wo.manpowerArr.join(', ')}</td>` : ''}
+                <td class="text-info">${m.itemId || '-'} / ${m.partno || '-'}</td><td>${m.material || '-'}</td><td>${m.qty || ''}</td><td>${m.statusMaterial || ''}</td>
+                ${idx === 0 ? `<td rowspan="${mats.length}"><span class="badge bg-success">${wo.status}</span></td><td rowspan="${mats.length}"><button class="btn btn-sm btn-danger p-1" onclick="deleteWO('${wo.nowo}')"><i class="fa fa-trash"></i></button></td>` : ''}
+              </tr>
+            `;
+          });
+        }
+      });
+      tbodyOpen.innerHTML = openHtml || '<tr><td colspan="8" class="text-center text-muted">Tidak ada unit breakdown. Aman!</td></tr>';
+      tbodyClose.innerHTML = closeHtml || '<tr><td colspan="12" class="text-center text-muted">Belum ada riwayat perbaikan.</td></tr>';
+    }
+
+    // --- INTERACTIVE EVENT LOGIC ---
+    document.getElementById('bmItemId').addEventListener('input', function(e) {
+      const match = dbBarangData.find(i => i["Item ID"] === e.target.value.trim());
+      if(match) {
+        document.getElementById('bmItem').value = match["Item"] || "";
+        document.getElementById('bmPartNo').value = match["Part-No"] || "";
+        document.getElementById('bmSatuan').value = match["Satuan"] || "pcs";
+        document.getElementById('bmKategori').value = match["Kategori"] || "";
+        document.getElementById('bmPrice').value = formatRupiah(match["HARGA UPDATE"] || 0);
+      }
+    });
+
+    document.getElementById('matItemId').addEventListener('input', function(e) {
+      const match = dbBarangData.find(i => i["Item ID"] === e.target.value.trim());
+      if(match) {
+        document.getElementById('matNama').value = match["Item"] || "";
+        document.getElementById('matPartNo').value = match["Part-No"] || "";
+        document.getElementById('matSatuan').value = match["Satuan"] || "pcs";
+        document.getElementById('matHarga').value = formatRupiah(match["HARGA UPDATE"] || 0);
+      }
+    });
+
+    document.getElementById('btnAddMaterial').addEventListener('click', () => {
+      let itemId = document.getElementById('matItemId').value.trim();
+      let qty = Number(document.getElementById('matQty').value) || 1;
+      
+      let matchedInv = dbBarangData.find(item => item["Item ID"] === itemId);
+      if(matchedInv && Number(matchedInv["Available Stock"]) < qty) {
+         alert(`[STOCK ALERT] Suku cadang kurang! Available stock tersisa: ${matchedInv["Available Stock"]} ${matchedInv["Satuan"]}`);
+      }
+
+      currentMaterials.push({
+        itemId: itemId,
+        material: document.getElementById('matNama').value.trim(),
+        partno: document.getElementById('matPartNo').value.trim(),
+        qty: qty,
+        satuan: document.getElementById('matSatuan').value.trim(),
+        harga: parseRupiah(document.getElementById('matHarga').value),
+        totalHarga: qty * parseRupiah(document.getElementById('matHarga').value),
+        statusMaterial: document.getElementById('matStatusMat').value
+      });
+      renderMaterialSubTable();
+      document.getElementById('matItemId').value = "";
+      document.getElementById('matNama').value = "";
+      document.getElementById('matPartNo').value = "";
+      document.getElementById('matHarga').value = "";
+    });
+
+    function renderMaterialSubTable() {
+      document.getElementById('materialListTableBody').innerHTML = currentMaterials.map((m, idx) => `
+        <tr>
+          <td>${m.itemId}</td><td>${m.material}</td><td>${m.partno}</td><td>${m.qty}</td>
+          <td>${formatRupiah(m.harga)}</td><td>${m.statusMaterial}</td>
+          <td><button type="button" class="btn btn-sm btn-danger py-0 px-1" onclick="currentMaterials.splice(${idx},1);renderMaterialSubTable();"><i class="fa fa-times"></i></button></td>
+        </tr>
+      `).join('');
+    }
+
+    window.openFormClose = function(nowo) {
+      isEditMode = true;
+      let matched = woData.find(w => w.nowo === nowo);
+      if(!matched) return;
+
+      document.getElementById('modalWOTitle').innerText = "Form Penutupan Kasus WO: " + nowo;
+      document.getElementById('inNoWo').value = matched.nowo;
+      document.getElementById('inTanggal').value = matched.tanggal;
+      document.getElementById('inUnit').value = matched.unit;
+      document.getElementById('inType').value = matched.type;
+      document.getElementById('inKomponen').value = matched.komponen;
+      document.getElementById('inSubKomponen').value = matched.subkomponen;
+      document.getElementById('inDeskripsi').value = matched.deskripsi;
+      document.getElementById('inJamMulai').value = matched.jamMulai;
+      
+      document.getElementById('inStatusBD').value = "RFU";
+      document.getElementById('inStatusKerja').value = "Selesai";
+      document.getElementById('closeWOPanel').classList.remove('d-none');
+      
+      currentMaterials = [];
+      renderMaterialSubTable();
+      
+      let modalElement = new bootstrap.Modal(document.getElementById('modalFormWO'));
+      modalElement.show();
+    };
+
+    // --- SEND OPERATIONS ENGINE ---
+    document.getElementById('mainWOForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      showLoading(true, "Menyimpan Berkas Transaksi WO...");
+      
+      let payload = {
+        nowo: document.getElementById('inNoWo').value.trim(),
+        tanggal: document.getElementById('inTanggal').value,
+        unit: document.getElementById('inUnit').value.trim(),
+        type: document.getElementById('inType').value.trim(),
+        komponen: document.getElementById('inKomponen').value.trim(),
+        subkomponen: document.getElementById('inSubKomponen').value.trim(),
+        deskripsi: document.getElementById('inDeskripsi').value.trim(),
+        jamMulai: document.getElementById('inJamMulai').value,
+        status: document.getElementById('inStatusBD').value,
+        jamSelesai: document.getElementById('inJamSelesai').value,
+        statusPekerjaan: document.getElementById('inStatusKerja').value,
+        descPekerjaan: document.getElementById('inDescKerja').value.trim(),
+        manpowerArr: document.getElementById('inManpower').value.split(',').map(s => s.trim()).filter(s => s !== ""),
+        materialArr: currentMaterials
+      };
+
+      let action = isEditMode ? "close" : "create";
+      let success = await sendToSpreadsheet(action, payload);
+      if(success) {
+        bootstrap.Modal.getInstance(document.getElementById('modalFormWO')).hide();
+        fetchSpreadsheetData();
+        fetchInventoryData();
+      } else { showLoading(false); }
+    });
+
+    document.getElementById('formBarangMasuk').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      showLoading(true, "Memproses Data Restock Vendor...");
+      let payload = {
+        date: document.getElementById('bmDate').value,
+        itemId: document.getElementById('bmItemId').value.trim(),
+        item: document.getElementById('bmItem').value.trim(),
+        partNo: document.getElementById('bmPartNo').value.trim(),
+        merk: document.getElementById('bmMerk').value.trim(),
+        vendor: document.getElementById('bmVendor').value.trim(),
+        qty: Number(document.getElementById('bmQty').value),
+        satuan: document.getElementById('bmSatuan').value.trim(),
+        kategori: document.getElementById('bmKategori').value.trim(),
+        price: parseRupiah(document.getElementById('bmPrice').value)
+      };
+
+      let success = await sendToSpreadsheet("restock_inventory", payload);
+      if(success) {
+        bootstrap.Modal.getInstance(document.getElementById('modalBarangMasuk')).hide();
+        document.getElementById('formBarangMasuk').reset();
+        fetchInventoryData();
+      }
+      showLoading(false);
+    });
+
+    window.deleteWO = async function(nowo) {
+      if(!confirm(`Konfirmasi Hapus No WO: ${nowo}?`)) return;
+      showLoading(true, "Menghapus Berkas...");
+      let s = await sendToSpreadsheet("delete", { nowo: nowo });
+      if(s) fetchSpreadsheetData();
+      showLoading(false);
+    };
+
+    async function sendToSpreadsheet(action, data) {
+      try {
+        let res = await fetch(SCRIPT_WEB_URL, {
+          method: "POST",
+          body: JSON.stringify({ action: action, data: data })
+        });
+        let resJson = await res.json();
+        return resJson.status === "success";
+      } catch(e) { console.error(e); return false; }
+    }
+
+    // --- HELPER UTILITIES ---
+    document.getElementById("bmPrice").addEventListener("input", (e) => e.target.value = formatRupiah(parseRupiah(e.target.value)));
+    document.getElementById("matHarga").addEventListener("input", (e) => e.target.value = formatRupiah(parseRupiah(e.target.value)));
+
+    function formatRupiah(num) {
+      return "Rp " + Number(num).toLocaleString('id-ID');
+    }
+    function parseRupiah(str) {
+      return Number(String(str).replace(/[^0-9]/g, '')) || 0;
+    }
+  </script>
 </body>
 </html>
