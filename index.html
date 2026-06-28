@@ -41,7 +41,7 @@
     .sidebar-toggle-btn {
       position: absolute; top: 17px; right: -32px; background: var(--primary); color: #fff; border:none; border-radius:0 14px 14px 0; width:32px; height:32px; z-index:9999; cursor:pointer;
     }
-    .main-container { margin-left:220px; transition: margin-left .23s; max-width:none; }
+    .main-container { margin-left:220px; transition: margin-left .23s; max-width:none; padding: 20px;}
     .sidebar.hide ~ .main-container { margin-left:0; }
     @media (max-width: 800px){
       .sidebar, .sidebar.hide {left:-220px;}
@@ -54,12 +54,13 @@
     .btn-main:active, .btn-main:focus, .btn-main:hover { background: var(--accent)!important; color: #fff!important;}
     .export-btn { margin-bottom: 10px; float:right;}
     .main-table { background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--shadow); color: var(--text); font-size: 1em; width: 100%; margin-bottom: 32px;}
-    .main-table th, .main-table td { border: none; padding: 7px 12px; white-space: nowrap; vertical-align: middle;}
+    .main-table th, .main-table td { border: none; padding: 10px 12px; white-space: nowrap; vertical-align: middle;}
     .main-table thead {background: #212234;}
     .main-table tr {border-bottom: 1px solid #23243a;}
     .main-table .btn-action { color: var(--primary); background: none; border: none; cursor: pointer; font-size: 1.1em; margin-right: 5px;}
     .main-table .btn-action:last-child {margin-right:0;}
-    .form-label {color: var(--muted);}
+    .form-label {color: var(--muted); margin-bottom: 4px;}
+    .form-group { margin-bottom: 14px; }
     .form-control, .form-select { background: var(--input-bg)!important; color: var(--text)!important; border: 1.5px solid #313258;}
     .material-horizontal-row { display: flex; flex-wrap: nowrap; align-items: flex-end; margin-bottom: 10px; gap: 10px;}
     .material-horizontal-row > .material-col {display: flex; flex-direction: column; min-width: 90px;}
@@ -67,9 +68,8 @@
     @media (max-width:1100px){
       .material-horizontal-row {flex-wrap:wrap;}
     }
-    .manpower-list, .material-list { margin-bottom: 7px;}
-    .manpower-list span, .material-list span { background: #23243c; border-radius: 7px; margin-right: 7px; padding: 4px 8px 4px 8px; font-size: 1em;}
-    .manpower-list .btn, .material-list .btn { margin-left: 2px;}
+    .manpower-list, .material-list { margin-bottom: 7px; display: flex; flex-wrap: wrap; gap: 5px;}
+    .manpower-list span, .material-list span { background: #23243c; border-radius: 7px; padding: 4px 8px; font-size: 0.95em; display: inline-flex; align-items: center; gap: 6px;}
     .modal-content { background: var(--main-bg); color: var(--text); border-radius: 10px; border: 1px solid #24253a;}
     .modal-footer .btn {border-radius: 6px;}
     .modal-backdrop {background: #181928b0;}
@@ -78,13 +78,16 @@
     @media (max-width: 800px){
       .menu-mobile-trigger {display:block;position:fixed;top:17px;left:10px;z-index:3001;border:none;background:var(--primary);color:#fff;width:36px;height:36px;border-radius:10px;}
     }
-    .main-container {transition: margin-left .23s;}
-    .modal-formwo .modal-dialog {max-width:620px;}
-    .modal-formwo label {margin-bottom:0;}
-    .modal-formwo .material-horizontal-row {margin-bottom:0;}
+    .loading-overlay { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.6); z-index:9999; display:none; align-items:center; justify-content:center; flex-direction:column; }
   </style>
 </head>
 <body>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner-border text-primary" role="status"></div>
+  <span class="mt-2 fw-semibold">Memproses Data ke Spreadsheet...</span>
+</div>
+
 <button class="menu-mobile-trigger" id="sidebarMobileBtn"><i class="fa fa-bars"></i></button>
 <div class="sidebar" id="sidebar">
   <div class="brand">PLANT</div>
@@ -95,6 +98,7 @@
   <div class="nav-sep"></div>
   <div style="padding: 12px 18px; color:var(--muted); font-size:0.93em;">PT Sample Plant System</div>
 </div>
+
 <div class="main-container" id="mainApp">
   <div id="plant-wo-content">
     <div id="wo-list-section">
@@ -103,6 +107,7 @@
         <button class="btn btn-main" id="btnShowFormWO"><i class="fa fa-plus"></i> Form WO</button>
       </div>
       <button class="btn btn-success export-btn" id="exportExcelBtn"><i class="fa fa-file-excel"></i> Export Excel</button>
+      
       <div class="section-title">OPEN Breakdown</div>
       <div class="table-responsive">
         <table class="main-table" id="mainTableOpen">
@@ -124,6 +129,7 @@
           <tbody id="mainTableBodyOpen"></tbody>
         </table>
       </div>
+      
       <div class="section-title">CLOSE Breakdown</div>
       <div class="table-responsive">
         <table class="main-table" id="mainTableClose">
@@ -144,7 +150,7 @@
               <th>Sparepart</th>
               <th>Part No</th>
               <th>Qty</th>
-              <th>Status Material Request</th>
+              <th>Status Material</th>
               <th>Status BD</th>
             </tr>
           </thead>
@@ -154,13 +160,14 @@
     </div>
   </div>
 </div>
+
 <!-- Modal Form WO -->
 <div class="modal fade modal-formwo" id="modalFormWO" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
       <form id="bdForm" autocomplete="off">
         <div class="modal-header">
-          <h5 class="modal-title">Form WO</h5>
+          <h5 class="modal-title">Form New WO</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
@@ -188,16 +195,16 @@
           </div>
           <div class="form-group">
             <label class="form-label">Komponen</label>
-            <input type="text" class="form-control" name="komponen" id="formKomponenInput" list="komponenSuggest" autocomplete="off" required>
+            <input type="text" class="form-control" name="komponen" id="formKomponenInput" list="komponenSuggest" required>
             <datalist id="komponenSuggest"></datalist>
           </div>
           <div class="form-group">
             <label class="form-label">Sub Komponen</label>
-            <input type="text" class="form-control" name="subkomponen" id="formSubkomponenInput" list="subkomponenSuggest" autocomplete="off" required>
+            <input type="text" class="form-control" name="subkomponen" id="formSubkomponenInput" list="subkomponenSuggest" required>
             <datalist id="subkomponenSuggest"></datalist>
           </div>
           <div class="form-group">
-            <label class="form-label">info BD</label>
+            <label class="form-label">Info BD</label>
             <input type="text" class="form-control" name="deskripsi" required>
           </div>
           <div class="form-group">
@@ -217,7 +224,8 @@
     </div>
   </div>
 </div>
-<!-- Modal CLOSE WO + Manpower & Material Request -->
+
+<!-- Modal CLOSE WO -->
 <div class="modal fade" id="modalCloseWO" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content" style="background:#23243c;">
@@ -230,22 +238,22 @@
           <label class="form-label">Jam Selesai (RFU):</label>
           <input type="time" class="form-control" id="inputCloseTime">
         </div>
-		<div class="form-group">
-            <label class="form-label">Deskripsi Pekerjaan</label>
-            <input type="text" class="form-control" name="descPekerjaan" placeholder="Uraikan proses/hasil pekerjaan" required>
-          </div>
-        <div class="mb-2">
+        <div class="form-group">
+          <label class="form-label">Deskripsi Pekerjaan</label>
+          <input type="text" class="form-control" id="inputCloseDescPekerjaan" placeholder="Uraikan proses/hasil pekerjaan">
+        </div>
+        <div class="mb-3">
           <label class="form-label">Manpower Terlibat</label>
-          <div id="manpowerListClose" class="manpower-list"></div>
+          <div id="manpowerListClose" class="manpower-list mb-2"></div>
           <div style="display:flex;align-items:end;gap:10px;">
-            <input type="text" class="form-control" style="max-width:220px;" id="formManpowerInputClose" list="manpowerSuggest" autocomplete="off">
+            <input type="text" class="form-control" style="max-width:220px;" id="formManpowerInputClose" list="manpowerSuggest">
             <datalist id="manpowerSuggest"></datalist>
             <button type="button" class="btn btn-success btn-sm" id="btnAddManpowerClose"><i class="fa fa-plus"></i></button>
           </div>
         </div>
         <div>
-          <label class="form-label">Sparepart</label>
-          <div id="materialListClose" class="material-list"></div>
+          <label class="form-label">Sparepart / Material Request</label>
+          <div id="materialListClose" class="material-list mb-2"></div>
           <div class="material-horizontal-row">
             <div class="material-col">
               <label class="form-label">Sparepart</label>
@@ -272,31 +280,33 @@
             </div>
             <div class="material-col">
               <label class="form-label">Harga</label>
-              <input type="text" class="form-control" id="inputHargaClose" value="0" min="0" placeholder="Rp 0">
+              <input type="text" class="form-control" id="inputHargaClose" value="Rp 0">
             </div>
             <div class="material-col">
               <label class="form-label">Total Harga</label>
-              <input type="text" class="form-control" id="inputTotalHargaClose" value="0" min="0" placeholder="Rp 0" readonly>
+              <input type="text" class="form-control" id="inputTotalHargaClose" value="Rp 0" readonly>
             </div>
             <div class="material-col">
               <label class="form-label">Status Material</label>
               <select class="form-select" id="inputStatusMaterialClose">
-                <option value="Terinstal">Terinstal</readonly>
+                <option value="Terinstal">Terinstal</option>
+                <option value="Pending">Pending</option>
               </select>
             </div>
-            <div class="material-col" style="align-items:center;">
-              <button type="button" class="btn btn-success btn-sm" id="btnAddMaterialClose" style="margin-top:20px;"><i class="fa fa-plus"></i></button>
+            <div class="material-col">
+              <button type="button" class="btn btn-success btn-sm" id="btnAddMaterialClose"><i class="fa fa-plus"></i></button>
             </div>
           </div>
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-main" id="btnCloseWO">Simpan</button>
+        <button type="button" class="btn btn-main" id="btnCloseWO">Simpan Close WO</button>
       </div>
     </div>
   </div>
 </div>
-<!-- Modal Login untuk Edit WO -->
+
+<!-- Modal Login Admin -->
 <div class="modal fade" id="modalLoginEdit" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content" style="background:#23243c;">
@@ -321,13 +331,14 @@
     </div>
   </div>
 </div>
-<!-- Modal Edit WO (untuk tabel CLOSE/RFU) -->
+
+<!-- Modal Edit WO -->
 <div class="modal fade" id="modalEditWO" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
       <form id="editFormWO" autocomplete="off">
         <div class="modal-header">
-          <h5 class="modal-title">Edit WO RFU</h5>
+          <h5 class="modal-title">Edit Data WO Open</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
@@ -342,9 +353,7 @@
           </div>
           <div class="form-group">
             <label class="form-label">Unit / CN</label>
-            <select class="form-select" id="editUnit" required>
-              <option value="">--Pilih Unit--</option>
-            </select>
+            <select class="form-select" id="editUnit" required></select>
           </div>
           <div class="form-group">
             <label class="form-label">Type Unit</label>
@@ -355,16 +364,12 @@
             <input type="time" class="form-control" id="editJamMulai" required>
           </div>
           <div class="form-group">
-            <label class="form-label">Jam Selesai (RFU)</label>
-            <input type="time" class="form-control" id="editJamSelesai" required>
-          </div>
-          <div class="form-group">
             <label class="form-label">Komponen</label>
-            <input type="text" class="form-control" id="editKomponen" list="komponenSuggest" autocomplete="off" required>
+            <input type="text" class="form-control" id="editKomponen" list="komponenSuggest" required>
           </div>
           <div class="form-group">
             <label class="form-label">Sub Komponen</label>
-            <input type="text" class="form-control" id="editSubkomponen" list="subkomponenSuggest" autocomplete="off" required>
+            <input type="text" class="form-control" id="editSubkomponen" list="subkomponenSuggest" required>
           </div>
           <div class="form-group">
             <label class="form-label">Info BD</label>
@@ -373,14 +378,9 @@
           <div class="form-group">
             <label class="form-label">Status Pekerjaan</label>
             <select class="form-select" id="editStatusPekerjaan" required>
-              <option value="">--Pilih Status--</option>
               <option value="Progres">Progres</option>
               <option value="Pending">Pending</option>
             </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Deskripsi Pekerjaan</label>
-            <input type="text" class="form-control" id="editDescPekerjaan" required>
           </div>
         </div>
         <div class="modal-footer">
@@ -391,17 +391,27 @@
     </div>
   </div>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
 <script>
+// ==========================================
+// PASTE URL SPREADSHEET APPS SCRIPT ANDA DI SINI
+const SCRIPT_WEB_URL = "https://script.google.com/macros/s/AKfycbwnI-wDVb2GVskECdBfzfNdK1VLiQdRdsdA8DqLiYi28JdbTzI1wgb-Qwt4NoVtvPoUHA/exec";
+// ==========================================
+
 const SPREADSHEET_API = {
   units: 'https://raw.githubusercontent.com/aankcryzers/Monitoring-Breakdown/main/unit.json'
 };
+
 let breakdownData = [];
-const FORM_KEY = "bd_monitoring_local";
-const WO_KEY = "bd_wo_counter";
 const SUGGEST_KEY = "bd_wo_suggest";
 let suggestData = {};
+
+function showLoading(show) {
+  document.getElementById("loadingOverlay").style.display = show ? "flex" : "none";
+}
+
 function loadSuggest() {
   suggestData = JSON.parse(localStorage.getItem(SUGGEST_KEY) || '{}');
   if (!suggestData.komponen) suggestData.komponen = [];
@@ -409,9 +419,11 @@ function loadSuggest() {
   if (!suggestData.manpower) suggestData.manpower = [];
   if (!suggestData.material) suggestData.material = [];
 }
+
 function saveSuggest() {
   localStorage.setItem(SUGGEST_KEY, JSON.stringify(suggestData));
 }
+
 function addSuggest(type, value) {
   if (!value) return;
   if (!suggestData[type].includes(value)) {
@@ -419,95 +431,97 @@ function addSuggest(type, value) {
     saveSuggest();
   }
 }
+
 function renderSuggest(type, datalistId) {
   const data = suggestData[type] || [];
   const datalist = document.getElementById(datalistId);
-  datalist.innerHTML = data.map(val => `<option value="${val}">`).join('');
+  if(datalist) datalist.innerHTML = data.map(val => `<option value="${val}">`).join('');
 }
+
 function initSuggestDropdowns(){
   renderSuggest('komponen', 'komponenSuggest');
   renderSuggest('subkomponen', 'subkomponenSuggest');
   renderSuggest('manpower', 'manpowerSuggest');
   renderSuggest('material', 'materialSuggest');
 }
-async function fetchDropdown(url, fallback) {
+
+async function fetchSpreadsheetData() {
+  showLoading(true);
   try {
-    const res = await fetch(url);
-    if(!res.ok) throw new Error();
-    return await res.json();
-  } catch {
-    return fallback;
+    let res = await fetch(SCRIPT_WEB_URL + "?action=read");
+    let json = await res.json();
+    if (json.status === "success") {
+      breakdownData = json.data;
+      renderAllTables();
+      generateNextWO();
+    }
+  } catch (err) {
+    console.error("Gagal memuat data dari Spreadsheet", err);
+  } finally {
+    showLoading(false);
   }
 }
+
+async function sendToSpreadsheet(action, data) {
+  showLoading(true);
+  try {
+    let res = await fetch(SCRIPT_WEB_URL, {
+      method: "POST",
+      body: JSON.stringify({ action: action, data: data }),
+      headers: { "Content-Type": "text/plain;charset=utf-8" }
+    });
+    let json = await res.json();
+    if(json.status === "success") {
+      await fetchSpreadsheetData();
+    } else {
+      alert("Error script: " + json.message);
+    }
+  } catch (err) {
+    alert("Koneksi gagal ke Spreadsheet!");
+    console.error(err);
+  } finally {
+    showLoading(false);
+  }
+}
+
 async function initUnitDropdown(){
-  let unitArr = await fetchDropdown(SPREADSHEET_API.units, [
-    {unit:"BSS-75", type:"DUMP TRUCK"}, {unit:"EX7-43", type:"A2B"}, {unit:"LT-01", type:"SUPPORT"}
-  ]);
-  let unitSel = document.getElementById("formUnitSelect");
-  unitSel.innerHTML = `<option value="">--Pilih Unit--</option>`;
-  unitArr.filter(u => u && (u.unit || u.unit_code)).forEach(u => {
-    let unitValue = u.unit || u.unit_code || "";
-    unitSel.innerHTML += `<option value="${unitValue}" data-type="${u.type||''}">${unitValue} (${u.type||''})</option>`;
-  });
-  unitSel.onchange = function(){
-    let opt = unitSel.options[unitSel.selectedIndex];
-    document.getElementById("formTypeSelect").value = opt.getAttribute("data-type") || "";
-  };
-  // Juga untuk modal edit
-  let editUnitSel = document.getElementById("editUnit");
-  editUnitSel.innerHTML = `<option value="">--Pilih Unit--</option>`;
-  unitArr.filter(u => u && (u.unit || u.unit_code)).forEach(u => {
-    let unitValue = u.unit || u.unit_code || "";
-    editUnitSel.innerHTML += `<option value="${unitValue}" data-type="${u.type||''}">${unitValue} (${u.type||''})</option>`;
-  });
-  editUnitSel.onchange = function(){
-    let opt = editUnitSel.options[editUnitSel.selectedIndex];
-    document.getElementById("editType").value = opt.getAttribute("data-type") || "";
-  };
-}
-loadSuggest();
-initSuggestDropdowns();
-initUnitDropdown();
-
-document.getElementById('formKomponenInput').addEventListener('input', function() { renderSuggest('komponen', 'komponenSuggest'); });
-document.getElementById('formSubkomponenInput').addEventListener('input', function() { renderSuggest('subkomponen', 'subkomponenSuggest'); });
-document.getElementById('editKomponen').addEventListener('input', function() { renderSuggest('komponen', 'komponenSuggest'); });
-document.getElementById('editSubkomponen').addEventListener('input', function() { renderSuggest('subkomponen', 'subkomponenSuggest'); });
-
-const sidebar = document.getElementById("sidebar");
-document.getElementById("sidebarToggleBtn").onclick = function() {
-  sidebar.classList.toggle("hide");
-};
-document.getElementById("sidebarMobileBtn").onclick = function() {
-  sidebar.classList.toggle("show");
-};
-document.body.addEventListener('click', function(e){
-  if(window.innerWidth < 800 && sidebar.classList.contains('show') && !sidebar.contains(e.target) && !e.target.classList.contains('menu-mobile-trigger')){
-    sidebar.classList.remove('show');
-  }
-});
-document.getElementById("menu-plant").onclick = function(){
-  document.getElementById("plant-wo-content").classList.remove("d-none");
-  document.querySelectorAll(".sidebar .nav-link").forEach(link=>link.classList.remove("active"));
-  this.classList.add("active");
-};
-function getNextWO() {
-  let counter = Number(localStorage.getItem(WO_KEY) || "1");
-  let nextWO = "WO-" + String(counter).padStart(5, "0");
-  document.getElementById("inputNoWO").value = nextWO;
-  return nextWO;
-}
-function incrementWO() {
-  let counter = Number(localStorage.getItem(WO_KEY) || "1");
-  localStorage.setItem(WO_KEY, counter + 1);
-}
-function saveBreakdown() { localStorage.setItem(FORM_KEY, JSON.stringify(breakdownData)); }
-function loadBreakdown() {
   try {
-    breakdownData = JSON.parse(localStorage.getItem(FORM_KEY) || "[]");
-    if (!Array.isArray(breakdownData)) breakdownData = [];
-  } catch { breakdownData = []; }
+    let res = await fetch(SPREADSHEET_API.units);
+    let unitArr = res.ok ? await res.json() : [{unit:"BSS-75", type:"DUMP TRUCK"}];
+    
+    let unitSel = document.getElementById("formUnitSelect");
+    let editUnitSel = document.getElementById("editUnit");
+    
+    let options = `<option value="">--Pilih Unit--</option>`;
+    unitArr.filter(u => u && (u.unit || u.unit_code)).forEach(u => {
+      let val = u.unit || u.unit_code;
+      options += `<option value="${val}" data-type="${u.type||''}">${val} (${u.type||''})</option>`;
+    });
+    
+    unitSel.innerHTML = options;
+    editUnitSel.innerHTML = options;
+    
+    unitSel.onchange = () => {
+      let opt = unitSel.options[unitSel.selectedIndex];
+      document.getElementById("formTypeSelect").value = opt.getAttribute("data-type") || "";
+    };
+    editUnitSel.onchange = () => {
+      let opt = editUnitSel.options[editUnitSel.selectedIndex];
+      document.getElementById("editType").value = opt.getAttribute("data-type") || "";
+    };
+  } catch(e) { console.error(e); }
 }
+
+function generateNextWO() {
+  let count = breakdownData.length + 1;
+  // Cari ID Max jika ada struktur kode numerik di Spreadsheet Anda
+  breakdownData.forEach(r => {
+    let num = parseInt((r.nowo || "").replace("WO-", ""));
+    if(!isNaN(num) && num >= count) count = num + 1;
+  });
+  document.getElementById("inputNoWO").value = "WO-" + String(count).padStart(5, "0");
+}
+
 function formatRupiah(x) {
   x = typeof x === "number" ? x : x.toString().replace(/[^\d]/g, "");
   if (!x) return "Rp 0";
@@ -516,190 +530,176 @@ function formatRupiah(x) {
 function parseRupiah(val) {
   return Number((val||"").toString().replace(/[^\d]/g, "")) || 0;
 }
+
+// System Init
+loadSuggest();
+initSuggestDropdowns();
+initUnitDropdown();
+if(SCRIPT_WEB_URL !== "URL_APPS_SCRIPT_ANDA_DISINI") {
+  fetchSpreadsheetData();
+} else {
+  alert("Harap masukkan URL Apps Script Anda terlebih dahulu di bagian variabel SCRIPT_WEB_URL!");
+}
+
+// Elements Events
+const sidebar = document.getElementById("sidebar");
+document.getElementById("sidebarToggleBtn").onclick = () => sidebar.classList.toggle("hide");
+document.getElementById("sidebarMobileBtn").onclick = () => sidebar.classList.toggle("show");
+
 const modalFormWO = new bootstrap.Modal(document.getElementById('modalFormWO'));
-document.getElementById('btnShowFormWO').addEventListener('click', function(){
-  modalFormWO.show();
+document.getElementById('btnShowFormWO').addEventListener('click', () => {
   document.getElementById('bdForm').reset();
-  getNextWO();
+  generateNextWO();
+  modalFormWO.show();
 });
+
 document.getElementById("bdForm").addEventListener("submit", function(e) {
   e.preventDefault();
   const fd = new FormData(e.target);
-  let row = {};
-  row.nowo = document.getElementById("inputNoWO").value;
-  row.tanggal = fd.get("tanggal");
-  row.unit = fd.get("unit");
-  row.type = fd.get("type");
-  row.jamMulai = fd.get("jamMulai");
-  row.komponen = fd.get("komponen");
-  row.subkomponen = fd.get("subkomponen");
-  row.deskripsi = fd.get("deskripsi");
-  row.statusPekerjaan = fd.get("statusPekerjaan");
-  row.descPekerjaan = fd.get("descPekerjaan");
-  row.manpowerArr = [];
-  row.materialArr = [];
-  row.status = "OPEN";
-  row.durasiMenit = "";
-  row.jamSelesai = "";
+  let row = {
+    nowo: document.getElementById("inputNoWO").value,
+    tanggal: fd.get("tanggal"),
+    unit: fd.get("unit"),
+    type: fd.get("type"),
+    jamMulai: fd.get("jamMulai"),
+    komponen: fd.get("komponen"),
+    subkomponen: fd.get("subkomponen"),
+    deskripsi: fd.get("deskripsi"),
+    statusPekerjaan: fd.get("statusPekerjaan"),
+    descPekerjaan: "",
+    manpowerArr: [],
+    materialArr: [],
+    status: "OPEN",
+    durasiMenit: "",
+    jamSelesai: ""
+  };
   addSuggest('komponen', row.komponen);
   addSuggest('subkomponen', row.subkomponen);
-  saveSuggest();
-  breakdownData.unshift(row);
-  saveBreakdown();
-  incrementWO();
-  getNextWO();
-  renderAllTables();
   modalFormWO.hide();
+  sendToSpreadsheet("create", row);
 });
+
+// Close WO Setup
 let idxWOClose = null;
 let formManpowerArrClose = [];
 let formMaterialArrClose = [];
-function refreshManpowerListClose() {
-  const listDiv = document.getElementById("manpowerListClose");
-  listDiv.innerHTML = formManpowerArrClose.map((m,i)=>`<span>${m} <button type="button" class="btn btn-danger btn-sm btnDelManClose" data-idx="${i}"><i class="fa fa-times"></i></button></span>`).join("");
-}
-function refreshMaterialListClose() {
-  const listDiv = document.getElementById("materialListClose");
-  listDiv.innerHTML = formMaterialArrClose.map((m,i)=>`
-    <span>
-      ${m.material} (PartNo: ${m.partno||"-"}, ${m.qty} ${m.satuan}, ${formatRupiah(m.harga)} x ${m.qty} = ${formatRupiah(m.totalHarga)}, ${m.statusMaterial})
-      <button type="button" class="btn btn-danger btn-sm btnDelMatClose" data-idx="${i}"><i class="fa fa-times"></i></button>
-    </span>
-  `).join("");
-}
-document.getElementById("btnAddManpowerClose").addEventListener("click", function() {
-  let val = document.getElementById("formManpowerInputClose").value.trim();
-  if(!val) return;
-  if(formManpowerArrClose.includes(val)) return;
-  formManpowerArrClose.push(val);
-  addSuggest('manpower', val);
-  refreshManpowerListClose();
-  document.getElementById("formManpowerInputClose").value="";
-  renderSuggest('manpower', 'manpowerSuggest');
-});
-document.getElementById("manpowerListClose").addEventListener('click', function(e){
-  if(e.target.classList.contains("btnDelManClose")){
-    let idx = Number(e.target.dataset.idx);
-    formManpowerArrClose.splice(idx, 1);
-    refreshManpowerListClose();
-  }
-});
-document.getElementById("btnAddMaterialClose").addEventListener("click", function() {
-  let material = document.getElementById('formMaterialInputClose').value.trim();
-  let qty = document.getElementById('inputQtyClose').value;
-  let satuan = document.getElementById('inputSatuanClose').value;
-  let harga = parseRupiah(document.getElementById('inputHargaClose').value);
-  let totalHarga = harga * qty;
-  let statusMaterial = document.getElementById('inputStatusMaterialClose').value;
-  let partno = document.getElementById('inputPartNoClose').value;
-  if(!material || !qty || !satuan) return;
-  formMaterialArrClose.push({material,qty,satuan,harga,totalHarga,statusMaterial,partno});
-  addSuggest('material', material);
-  refreshMaterialListClose();
-  document.getElementById('formMaterialInputClose').value="";
-  document.getElementById('inputQtyClose').value="1";
-  document.getElementById('inputPartNoClose').value="";
-  document.getElementById('inputSatuanClose').value="pcs";
-  document.getElementById('inputHargaClose').value=formatRupiah(0);
-  document.getElementById('inputTotalHargaClose').value=formatRupiah(0);
-  document.getElementById('inputStatusMaterialClose').value="Pending";
-  renderSuggest('material', 'materialSuggest');
-});
-document.getElementById("materialListClose").addEventListener('click', function(e){
-  if(e.target.classList.contains("btnDelMatClose")){
-    let idx = Number(e.target.dataset.idx);
-    formMaterialArrClose.splice(idx, 1);
-    refreshMaterialListClose();
-  }
-});
-document.getElementById("inputQtyClose").addEventListener("input", updateFormTotalHargaClose);
-document.getElementById("inputHargaClose").addEventListener("input", function(e){
-  let num = parseRupiah(e.target.value);
-  e.target.value = formatRupiah(num);
-  updateFormTotalHargaClose();
-});
-function updateFormTotalHargaClose() {
-  let qty = Number(document.getElementById("inputQtyClose").value || "0");
-  let harga = parseRupiah(document.getElementById("inputHargaClose").value || "0");
-  document.getElementById("inputHargaClose").value = formatRupiah(harga);
-  document.getElementById("inputTotalHargaClose").value = formatRupiah(harga*qty);
-}
+
 window.openCloseWOModal = function(idx) {
   idxWOClose = idx;
   formManpowerArrClose = [];
   formMaterialArrClose = [];
   document.getElementById('inputCloseTime').value = "";
+  document.getElementById('inputCloseDescPekerjaan').value = "";
   refreshManpowerListClose();
   refreshMaterialListClose();
   new bootstrap.Modal(document.getElementById('modalCloseWO')).show();
 };
-document.getElementById('btnCloseWO').addEventListener("click", function() {
+
+function refreshManpowerListClose() {
+  document.getElementById("manpowerListClose").innerHTML = formManpowerArrClose.map((m,i)=>`<span>${m} <i class="fa fa-times text-danger cursor-pointer" onclick="formManpowerArrClose.splice(${i},1);refreshManpowerListClose();"></i></span>`).join("");
+}
+
+function refreshMaterialListClose() {
+  document.getElementById("materialListClose").innerHTML = formMaterialArrClose.map((m,i)=>`<span>${m.material} (${m.qty} ${m.satuan}) <i class="fa fa-times text-danger cursor-pointer" onclick="formMaterialArrClose.splice(${i},1);refreshMaterialListClose();"></i></span>`).join("");
+}
+
+document.getElementById("btnAddManpowerClose").addEventListener("click", () => {
+  let val = document.getElementById("formManpowerInputClose").value.trim();
+  if(!val || formManpowerArrClose.includes(val)) return;
+  formManpowerArrClose.push(val);
+  addSuggest('manpower', val);
+  refreshManpowerListClose();
+  document.getElementById("formManpowerInputClose").value = "";
+});
+
+document.getElementById("inputHargaClose").addEventListener("input", (e) => {
+  let num = parseRupiah(e.target.value);
+  e.target.value = formatRupiah(num);
+  let qty = Number(document.getElementById("inputQtyClose").value || 0);
+  document.getElementById("inputTotalHargaClose").value = formatRupiah(num * qty);
+});
+
+document.getElementById("btnAddMaterialClose").addEventListener("click", () => {
+  let material = document.getElementById('formMaterialInputClose').value.trim();
+  let qty = Number(document.getElementById('inputQtyClose').value);
+  let satuan = document.getElementById('inputSatuanClose').value;
+  let harga = parseRupiah(document.getElementById('inputHargaClose').value);
+  let partno = document.getElementById('inputPartNoClose').value;
+  let statusMaterial = document.getElementById('inputStatusMaterialClose').value;
+  
+  if(!material || qty <= 0) return;
+  
+  formMaterialArrClose.push({ material, qty, satuan, harga, totalHarga: harga*qty, partno, statusMaterial });
+  addSuggest('material', material);
+  refreshMaterialListClose();
+  
+  document.getElementById('formMaterialInputClose').value = "";
+  document.getElementById('inputPartNoClose').value = "";
+  document.getElementById('inputHargaClose').value = "Rp 0";
+  document.getElementById('inputTotalHargaClose').value = "Rp 0";
+});
+
+document.getElementById('btnCloseWO').addEventListener("click", () => {
   let time = document.getElementById('inputCloseTime').value;
+  let descPek = document.getElementById('inputCloseDescPekerjaan').value.trim();
   if(!time) { alert("Isi jam selesai!"); return; }
-  if(idxWOClose == null) return;
+  
   let wo = breakdownData[idxWOClose];
   wo.jamSelesai = time;
-  let [sh,sm] = (wo.jamMulai||"0:0").split(":").map(x=>parseInt(x));
-  let [eh,em] = (time||"0:0").split(":").map(x=>parseInt(x));
-  let mins = (eh*60+em)-(sh*60+sm); if(mins<0) mins += 24*60;
+  wo.descPekerjaan = descPek;
+  
+  let [sh, sm] = (wo.jamMulai || "0:0").split(":").map(x => parseInt(x));
+  let [eh, em] = (time || "0:0").split(":").map(x => parseInt(x));
+  let mins = (eh * 60 + em) - (sh * 60 + sm);
+  if(mins < 0) mins += 24 * 60;
+  
   wo.durasiMenit = mins;
   wo.status = "RFU";
-  wo.materialArr = [...formMaterialArrClose];
+  wo.statusPekerjaan = "Selesai";
   wo.manpowerArr = [...formManpowerArrClose];
-  (wo.manpowerArr||[]).forEach(mp => addSuggest('manpower', mp));
-  (wo.materialArr||[]).forEach(m => addSuggest('material', m.material));
-  saveSuggest();
-  saveBreakdown();
-  renderAllTables();
+  wo.materialArr = [...formMaterialArrClose];
+  
   bootstrap.Modal.getInstance(document.getElementById('modalCloseWO')).hide();
-  idxWOClose = null;
+  sendToSpreadsheet("close", wo);
 });
-// --- EDIT WO LOGIC ---
+
+// Edit WO Open Setup
 let editIdxWO = null;
-let modalLoginEdit = new bootstrap.Modal(document.getElementById('modalLoginEdit'));
-let modalEditWO = new bootstrap.Modal(document.getElementById('modalEditWO'));
-window.openEditWOModal = function(idx) {
+window.openEditWOModal = (idx) => {
   editIdxWO = idx;
   document.getElementById("loginEditUser").value = "";
   document.getElementById("loginEditPass").value = "";
   document.getElementById("loginEditError").classList.add("d-none");
-  modalLoginEdit.show();
+  new bootstrap.Modal(document.getElementById('modalLoginEdit')).show();
 };
-document.getElementById('btnLoginEditWO').addEventListener('click', function() {
+
+document.getElementById('btnLoginEditWO').addEventListener('click', () => {
   let user = document.getElementById("loginEditUser").value.trim();
   let pass = document.getElementById("loginEditPass").value.trim();
   if(user === "admin" && pass === "admin") {
-    modalLoginEdit.hide();
-    setTimeout(()=>{ // wait modal hide
-      showEditWOModal(editIdxWO);
-    },200);
+    bootstrap.Modal.getInstance(document.getElementById('modalLoginEdit')).hide();
+    let row = breakdownData[editIdxWO];
+    document.getElementById("editIdxWO").value = editIdxWO;
+    document.getElementById("editNoWO").value = row.nowo;
+    document.getElementById("editTanggal").value = row.tanggal || "";
+    document.getElementById("editUnit").value = row.unit || "";
+    document.getElementById("editType").value = row.type || "";
+    document.getElementById("editJamMulai").value = row.jamMulai || "";
+    document.getElementById("editKomponen").value = row.komponen || "";
+    document.getElementById("editSubkomponen").value = row.subkomponen || "";
+    document.getElementById("editDeskripsi").value = row.deskripsi || "";
+    document.getElementById("editStatusPekerjaan").value = row.statusPekerjaan || "Progres";
+    new bootstrap.Modal(document.getElementById('modalEditWO')).show();
   } else {
     document.getElementById("loginEditError").classList.remove("d-none");
   }
 });
-function showEditWOModal(idx) {
-  let row = breakdownData[idx];
-  document.getElementById("editIdxWO").value = idx;
-  document.getElementById("editNoWO").value = row.nowo;
-  document.getElementById("editTanggal").value = row.tanggal||"";
-  document.getElementById("editUnit").value = row.unit||"";
-  document.getElementById("editType").value = row.type||"";
-  document.getElementById("editJamMulai").value = row.jamMulai||"";
-  document.getElementById("editKomponen").value = row.komponen||"";
-  document.getElementById("editSubkomponen").value = row.subkomponen||"";
-  document.getElementById("editDeskripsi").value = row.deskripsi||"";
-  document.getElementById("editStatusPekerjaan").value = row.statusPekerjaan||"";
-  document.getElementById("editDescPekerjaan").value = row.descPekerjaan||"";
-  modalEditWO.show();
-}
-document.getElementById("editUnit").addEventListener("change",function(){
-  let opt = this.options[this.selectedIndex];
-  document.getElementById("editType").value = opt.getAttribute("data-type") || "";
-});
-document.getElementById("editFormWO").addEventListener("submit",function(e){
+
+document.getElementById("editFormWO").addEventListener("submit", (e) => {
   e.preventDefault();
   let idx = Number(document.getElementById("editIdxWO").value);
   let row = breakdownData[idx];
+  
   row.tanggal = document.getElementById("editTanggal").value;
   row.unit = document.getElementById("editUnit").value;
   row.type = document.getElementById("editType").value;
@@ -708,17 +708,14 @@ document.getElementById("editFormWO").addEventListener("submit",function(e){
   row.subkomponen = document.getElementById("editSubkomponen").value;
   row.deskripsi = document.getElementById("editDeskripsi").value;
   row.statusPekerjaan = document.getElementById("editStatusPekerjaan").value;
-  row.descPekerjaan = document.getElementById("editDescPekerjaan").value;
-  addSuggest('komponen', row.komponen);
-  addSuggest('subkomponen', row.subkomponen);
-  saveSuggest();
-  saveBreakdown();
-  renderAllTables();
-  modalEditWO.hide();
+  
+  bootstrap.Modal.getInstance(document.getElementById('modalEditWO')).hide();
+  sendToSpreadsheet("update", row);
 });
+
 function renderAllTables() {
   const tbodyOpen = document.getElementById('mainTableBodyOpen');
-  let dataOpen = breakdownData.filter(row => row.status === "OPEN");
+  let dataOpen = breakdownData.filter(row => row.status === "OPEN" || row.status === "");
   tbodyOpen.innerHTML = dataOpen.map((row,i) => `
     <tr>
       <td>${i+1}</td>
@@ -730,22 +727,14 @@ function renderAllTables() {
       <td>${row.subkomponen||''}</td>
       <td>${row.deskripsi||''}</td>
       <td>${row.jamMulai||''}</td>
-      <td>${(row.manpowerArr||[]).join(", ")}</td>
-      <td>${(row.materialArr||[]).map(m=>m.material).join("<br>")}</td>
-      <td>${row.materialArr?.map(m=>m.partno||"-").join('<br>')}</td>
-      <td>${row.materialArr?.map(m=>m.qty).join('<br>')}</td>
-      <td>${row.materialArr?.map(m=>m.statusMaterial).join('<br>')}</td>
-      <td>${row.status||'OPEN'}</td>
+      <td><span class="badge bg-warning">${row.statusPekerjaan||'Progres'}</span></td>
       <td>
-        <button type="button" class="btn btn-sm btn-success btn-action btn-closewo" data-idx="${breakdownData.indexOf(row)}" title="Close WO">
-          <i class="fa fa-check"></i>
-        </button>
-        <button type="button" class="btn btn-sm btn-warning btn-action btn-editwo" data-idx="${breakdownData.indexOf(row)}" title="Edit WO">
-          <i class="fa fa-edit"></i>
-        </button>
+        <button type="button" class="btn btn-sm btn-success btn-action" onclick="openCloseWOModal(${breakdownData.indexOf(row)})" title="Close WO"><i class="fa fa-check"></i></button>
+        <button type="button" class="btn btn-sm btn-warning btn-action" onclick="openEditWOModal(${breakdownData.indexOf(row)})" title="Edit WO"><i class="fa fa-edit"></i></button>
       </td>
     </tr>
-  `).join('') || `<tr><td colspan="16" class="text-center text-muted">Belum ada data</td></tr>`;
+  `).join('') || `<tr><td colspan="11" class="text-center text-muted">Belum ada data open</td></tr>`;
+
   const tbodyClose = document.getElementById('mainTableBodyClose');
   let dataClose = breakdownData.filter(row => row.status === "RFU");
   tbodyClose.innerHTML = dataClose.map((row,i) => `
@@ -763,118 +752,33 @@ function renderAllTables() {
       <td>${row.durasiMenit||''}</td>
       <td>${(row.manpowerArr||[]).join(", ")}</td>
       <td>${(row.materialArr||[]).map(m=>m.material).join("<br>")}</td>
-      <td>${row.materialArr?.map(m=>m.partno||"-").join('<br>')}</td>
-      <td>${row.materialArr?.map(m=>m.qty).join('<br>')}</td>
-      <td>${row.materialArr?.map(m=>m.statusMaterial).join('<br>')}</td>
-      <td>${row.status||'RFU'}</td>
+      <td>${(row.materialArr||[]).map(m=>m.partno||"-").join('<br>')}</td>
+      <td>${(row.materialArr||[]).map(m=>m.qty).join('<br>')}</td>
+      <td>${(row.materialArr||[]).map(m=>m.statusMaterial||"").join('<br>')}</td>
+      <td><span class="badge bg-success">${row.status||'RFU'}</span></td>
     </tr>
-  `).join('') || `<tr><td colspan="17" class="text-center text-muted">Belum ada data</td></tr>`;
-  // Add event listeners for close WO buttons
-  tbodyOpen.querySelectorAll('.btn-closewo').forEach(btn=>{
-    btn.addEventListener('click',function(){
-      openCloseWOModal(Number(btn.getAttribute('data-idx')));
-    });
-  });
-  // Add event listeners for edit WO buttons
-  tbodyOpen.querySelectorAll('.btn-editwo').forEach(btn=>{
-    btn.addEventListener('click',function(){
-      openEditWOModal(Number(btn.getAttribute('data-idx')));
-    });
-  });
+  `).join('') || `<tr><td colspan="17" class="text-center text-muted">Belum ada data rfu</td></tr>`;
 }
-document.getElementById('exportExcelBtn').addEventListener('click',function() {
-  let rows = [];
-  let all = [...breakdownData];
-  rows.push([
-    "No",
-    "No WO",
-    "Tanggal",
-    "Unit/CN",
-    "Type",
-    "Komponen",
-    "Sub Komponen",
-    "Deskripsi",
-    "Jam Mulai",
-    "Jam Selesai",
-    "Durasi (menit)",
-    "Manpower",
-    "Status Pekerjaan",
-    "Deskripsi Pekerjaan",
-    "Material/Sparepart",
-    "Part No",
-    "Qty",
-    "Satuan",
-    "Harga",
-    "Total Harga",
-    "Status Material",
-    "Status BD"
-  ]);
-  let idx = 1;
-  all.forEach(row => {
-    if(row.materialArr && row.materialArr.length) {
-      row.materialArr.forEach((mat,ix) => {
-        rows.push([
-          idx,
-          row.nowo||'',
-          row.tanggal||'',
-          row.unit||'',
-          row.type||'',
-          row.komponen||'',
-          row.subkomponen||'',
-          row.deskripsi||'',
-          row.jamMulai||'',
-          row.jamSelesai||'',
-          row.durasiMenit||'',
-          (row.manpowerArr||[]).join(", "),
-          row.statusPekerjaan||'',
-          row.descPekerjaan||'',
-          mat.material||'',
-          mat.partno||'',
-          mat.qty||'',
-          mat.satuan||'',
-          formatRupiah(mat.harga),
-          formatRupiah(mat.totalHarga),
-          mat.statusMaterial||'',
-          row.status||''
-        ]);
+
+// Export Excel Function
+document.getElementById('exportExcelBtn').addEventListener('click', () => {
+  let rows = [["No", "No WO", "Tanggal", "Unit/CN", "Type", "Komponen", "Sub Komponen", "Deskripsi", "Jam Mulai", "Jam Selesai", "Durasi (menit)", "Manpower", "Status Pekerjaan", "Deskripsi Pekerjaan", "Material/Sparepart", "Part No", "Qty", "Satuan", "Harga", "Total Harga", "Status Material", "Status BD"]];
+  
+  breakdownData.forEach((row, idx) => {
+    if(row.materialArr && row.materialArr.length > 0) {
+      row.materialArr.forEach(mat => {
+        rows.push([idx+1, row.nowo, row.tanggal, row.unit, row.type, row.komponen, row.subkomponen, row.deskripsi, row.jamMulai, row.jamSelesai, row.durasiMenit, row.manpowerArr.join(", "), row.statusPekerjaan, row.descPekerjaan, mat.material, mat.partno, mat.qty, mat.satuan, formatRupiah(mat.harga), formatRupiah(mat.totalHarga), mat.statusMaterial, row.status]);
       });
-      idx++;
     } else {
-      rows.push([
-        idx,
-        row.nowo||'',
-        row.tanggal||'',
-        row.unit||'',
-        row.type||'',
-        row.komponen||'',
-        row.subkomponen||'',
-        row.deskripsi||'',
-        row.jamMulai||'',
-        row.jamSelesai||'',
-        row.durasiMenit||'',
-        (row.manpowerArr||[]).join(", "),
-        row.statusPekerjaan||'',
-        row.descPekerjaan||'',
-        '',
-        '',
-        '',
-        '',
-        '',
-        '',
-        '',
-        row.status||''
-      ]);
-      idx++;
+      rows.push([idx+1, row.nowo, row.tanggal, row.unit, row.type, row.komponen, row.subkomponen, row.deskripsi, row.jamMulai, row.jamSelesai, row.durasiMenit, row.manpowerArr.join(", "), row.statusPekerjaan, row.descPekerjaan, "", "", "", "", "", "", "", row.status]);
     }
   });
+  
   let ws = XLSX.utils.aoa_to_sheet(rows);
   let wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Breakdown");
-  XLSX.writeFile(wb, "breakdown_list.xlsx");
+  XLSX.utils.book_append_sheet(wb, ws, "Breakdown Data");
+  XLSX.writeFile(wb, "Breakdown_Report.xlsx");
 });
-loadBreakdown();
-renderAllTables();
-getNextWO();
 </script>
 </body>
 </html>
