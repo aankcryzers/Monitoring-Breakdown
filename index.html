@@ -307,426 +307,279 @@
     let currentMaterials = [];
     let isEditMode = false;
 
-    // --- INITIAL APP ENGINE ---
-    window.addEventListener('DOMContentLoaded', () => {
-      fetchSpreadsheetData();
-      fetchInventoryData();
-      
-      document.getElementById('btnShowFormWO').addEventListener('click', () => {
-        isEditMode = false;
-        document.getElementById('modalWOTitle').innerText = "Buat Transaksi WO Baru";
-        document.getElementById('mainWOForm').reset();
-        currentMaterials = [];
-        renderMaterialSubTable();
-        document.getElementById('closeWOPanel').classList.add('d-none');
-      });
-    });
+   <script>
+const SCRIPT_WEB_URL = "https://script.google.com/macros/s/AKfycbw-8Np1rneYt0k3UXnZz25Asqn4oHYih42_GMRHbiTYaMlwmKGe3oXo9j4e4dvkODlkWw/exec";
 
-    window.switchTab = function(tabName) {
-      const menuWo = document.getElementById('menu-plant');
-      const menuInv = document.getElementById('menu-inventory');
-      const contentWo = document.getElementById('plant-wo-content');
-      const contentInv = document.getElementById('inventory-content');
-      if(tabName === 'wo') {
-        menuWo.classList.add('active'); menuInv.classList.remove('active');
-        contentWo.classList.remove('d-none'); contentInv.classList.add('d-none');
-        fetchSpreadsheetData();
-      } else {
-        menuWo.classList.remove('active'); menuInv.classList.add('active');
-        contentWo.classList.add('d-none'); contentInv.classList.remove('d-none');
-        fetchInventoryData();
-      }
-    };
+let woData = [];
+let dbBarangData = [];
+let currentMaterials = [];
+let isEditMode = false;
 
-    function showLoading(show, text = "Sinkronisasi Server Tambang...") {
-      const el = document.getElementById('loadingOverlay');
-      document.getElementById('loadingText').innerText = text;
-      show ? el.classList.remove('d-none') : el.classList.add('d-none');
+/* =========================
+   INIT
+========================= */
+window.addEventListener('DOMContentLoaded', () => {
+  fetchSpreadsheetData();
+  fetchInventoryData();
+
+  document.getElementById('btnShowFormWO').addEventListener('click', () => {
+    isEditMode = false;
+    document.getElementById('modalWOTitle').innerText = "Buat Transaksi WO Baru";
+    document.getElementById('mainWOForm').reset();
+    currentMaterials = [];
+    renderMaterialSubTable();
+    document.getElementById('closeWOPanel').classList.add('d-none');
+  });
+});
+
+/* =========================
+   TAB SWITCH
+========================= */
+window.switchTab = function(tabName) {
+  const menuWo = document.getElementById('menu-plant');
+  const menuInv = document.getElementById('menu-inventory');
+  const contentWo = document.getElementById('plant-wo-content');
+  const contentInv = document.getElementById('inventory-content');
+
+  if(tabName === 'wo') {
+    menuWo.classList.add('active');
+    menuInv.classList.remove('active');
+    contentWo.classList.remove('d-none');
+    contentInv.classList.add('d-none');
+    fetchSpreadsheetData();
+  } else {
+    menuWo.classList.remove('active');
+    menuInv.classList.add('active');
+    contentWo.classList.add('d-none');
+    contentInv.classList.remove('d-none');
+    fetchInventoryData();
+  }
+};
+
+/* =========================
+   LOADING
+========================= */
+function showLoading(show, text="Loading...") {
+  const el = document.getElementById('loadingOverlay');
+  document.getElementById('loadingText').innerText = text;
+
+  if(show) el.classList.remove('d-none');
+  else el.classList.add('d-none');
+}
+
+/* =========================
+   FETCH WO DATA (FIX MISSING FUNCTION)
+========================= */
+async function fetchSpreadsheetData() {
+  try {
+    let res = await fetch(SCRIPT_WEB_URL + "?action=read_wo");
+    let json = await res.json();
+
+    if(json.status === "success") {
+      woData = json.data || [];
+      renderWOTables();
     }
+  } catch(err) {
+    console.error("WO Fetch Error:", err);
+  }
+}
 
-   // --- SYNC ENGINE DATABASE ---
+/* =========================
+   FETCH INVENTORY
+========================= */
 async function fetchInventoryData() {
   try {
     let res = await fetch(SCRIPT_WEB_URL + "?action=read_inventory");
     let json = await res.json();
-    if (json.status === "success") { 
-      dbBarangData = json.data; 
-      // PERBAIKAN: Masukkan variabel data ke dalam render
-      renderInventoryTable(dbBarangData); 
+
+    if(json.status === "success") {
+      dbBarangData = json.data || [];
+      renderInventoryTable(dbBarangData);
     }
-  } catch (err) { console.error(err); }
+  } catch(err) {
+    console.error("Inventory Error:", err);
+  }
 }
 
-// --- FUNGSI RENDER SATU-SATUNYA (HAPUS FUNGSI YANG LAMA) ---
+/* =========================
+   INVENTORY RENDER (FIXED SINGLE VERSION)
+========================= */
 function renderInventoryTable(data) {
-  if (!data) return; // Mencegah error map undefined
   const tbody = document.getElementById("dbBarangTableBody");
-  tbody.innerHTML = "";
-  
-  // Update datalist untuk auto-suggest form masuk
-  const datalist = document.getElementById('itemIdSuggest');
-  if(datalist) {
-    datalist.innerHTML = data.map(item => `<option value="${item["Item ID"]}"> ${item["Item"]} [PN: ${item["Part-No"] || item["Part No"] || '-'}]</option>`).join('');
-  }
+  const datalist = document.getElementById("itemIdSuggest");
 
-  if(data.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="10" class="text-center text-muted">Database Kosong</td></tr>';
+  if(!data || data.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="10" class="text-center text-muted">Database Kosong</td></tr>`;
     return;
   }
 
-  data.forEach(item => {
+  tbody.innerHTML = data.map(item => {
     let stock = Number(item["Stock"]) || 0;
     let avail = Number(item["Available Stock"] || item["Avaliable Stock"]) || 0;
-    let style = avail <= 0 ? 'text-danger fw-bold' : (avail <= 2 ? 'text-warning fw-bold' : '');
 
-    let tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td class="text-info fw-bold">${item["Item ID"] || "-"}</td>
-      <td>${item["Item"] || "-"}</td>
-      <td>${item["Part No"] || item["Part-No"] || "-"}</td>
-      <td class="text-muted small">${item["Persamaan1"] || "-"} / ${item["Persamaan2"] || "-"}</td>
-      <td>${item["Satuan"] || "-"}</td>
-      <td><span class="badge bg-secondary">${item["Kategori"] || "-"}</span></td>
-      <td>${stock}</td>
-      <td class="${style}">${avail}</td>
-      <td>${formatRupiah(item["HARGA UPDATE"] || 0)}</td>
-      <td>
-        <div class="d-flex gap-1">
-          <button class="btn btn-sm btn-warning btn-edit-barang" data-id="${item["Item ID"]}"><i class="fa fa-edit"></i></button>
-          <button class="btn btn-sm btn-danger btn-delete-barang" data-id="${item["Item ID"]}"><i class="fa fa-trash"></i></button>
-        </div>
-      </td>
+    let style = avail <= 0 ? 'text-danger fw-bold' :
+                avail <= 2 ? 'text-warning fw-bold' : '';
+
+    return `
+      <tr>
+        <td class="text-info fw-bold">${item["Item ID"] || "-"}</td>
+        <td>${item["Item"] || "-"}</td>
+        <td>${item["Part No"] || item["Part-No"] || "-"}</td>
+        <td>${item["Persamaan1"] || "-"} / ${item["Persamaan2"] || "-"}</td>
+        <td>${item["Satuan"] || "-"}</td>
+        <td><span class="badge bg-secondary">${item["Kategori"] || "-"}</span></td>
+        <td>${stock}</td>
+        <td class="${style}">${avail}</td>
+        <td>${formatRupiah(item["HARGA UPDATE"] || 0)}</td>
+        <td>
+          <button class="btn btn-warning btn-sm btn-edit-barang" data-id="${item["Item ID"]}"><i class="fa fa-edit"></i></button>
+        </td>
+      </tr>
     `;
-    tbody.appendChild(tr);
-  });
+  }).join("");
 
-  // Listener Tombol Edit
-  document.querySelectorAll(".btn-edit-barang").forEach(btn => {
-    btn.addEventListener("click", function() {
-      const itemId = this.getAttribute("data-id");
-      const targetItem = dbBarangData.find(i => i["Item ID"] === itemId);
-      if(targetItem) { bukaModalEditBarang(targetItem); }
-    });
-  });
-
-  // Listener Tombol Delete
-  document.querySelectorAll(".btn-delete-barang").forEach(btn => {
-    btn.addEventListener("click", async function() {
-      const itemId = this.getAttribute("data-id");
-      if(confirm(`Yakin HAPUS Item ID: ${itemId} dari Master?`)) {
-        showLoading(true, "Menghapus item...");
-        let success = await sendToSpreadsheet("delete_master_item", { itemId: itemId });
-        if(success) await fetchInventoryData();
-        showLoading(false);
-      }
-    });
-  });
-}
-
-// --- FUNGSI BUKA MODAL EDIT ---
-function bukaModalEditBarang(item) {
-  document.getElementById('eItemId').value = item["Item ID"] || '';
-  document.getElementById('eKategori').value = item["Kategori"] || '';
-  document.getElementById('eItem').value = item["Item"] || '';
-  document.getElementById('ePartNo').value = item["Part No"] || item["Part-No"] || '';
-  document.getElementById('ePersamaan1').value = item["Persamaan1"] || '';
-  document.getElementById('ePersamaan2').value = item["Persamaan2"] || '';
-  document.getElementById('eSatuan').value = item["Satuan"] || '';
-  document.getElementById('eHarga').value = formatRupiah(item["HARGA UPDATE"] || 0);
-  
-  new bootstrap.Modal(document.getElementById('modalEditBarang')).show();
-}
-
-// --- HANDLER SUBMIT EDIT ---
-document.getElementById('formEditBarang').addEventListener('submit', async function(e) {
-  e.preventDefault();
-  showLoading(true, "Mengupdate Master Barang...");
-  
-  let payload = {
-    itemId: document.getElementById('eItemId').value,
-    item: document.getElementById('eItem').value.trim(),
-    partNo: document.getElementById('ePartNo').value.trim(),
-    persamaan1: document.getElementById('ePersamaan1').value.trim(),
-    persamaan2: document.getElementById('ePersamaan2').value.trim(),
-    satuan: document.getElementById('eSatuan').value.trim(),
-    kategori: document.getElementById('eKategori').value.trim(),
-    harga: parseRupiah(document.getElementById('eHarga').value)
-  };
-
-  let success = await sendToSpreadsheet("edit_master_item", payload); // Pastikan action ini ada di Code.gs Google Sheet Bapak
-  if(success) {
-    bootstrap.Modal.getInstance(document.getElementById('modalEditBarang')).hide();
-    await fetchInventoryData();
+  if(datalist) {
+    datalist.innerHTML = data.map(i =>
+      `<option value="${i["Item ID"]}">${i["Item"]} [${i["Part No"] || "-"}]</option>`
+    ).join("");
   }
-  showLoading(false);
-});
+}
 
-// Format Rupiah Live untuk Edit Modal
-document.getElementById("eHarga").addEventListener("input", (e) => e.target.value = formatRupiah(parseRupiah(e.target.value)));
+/* =========================
+   WO TABLE RENDER
+========================= */
+function renderWOTables() {
+  const openT = document.getElementById('mainTableBodyOpen');
+  const closeT = document.getElementById('mainTableBodyClose');
 
-    // --- RENDER COMPONENT ENGINE ---
-    function renderInventoryTable() {
-      const tbody = document.getElementById('dbBarangTableBody');
-      const datalist = document.getElementById('itemIdSuggest');
-      
-      tbody.innerHTML = dbBarangData.map(item => {
-        let stock = Number(item["Stock"]) || 0;
-        let avail = Number(item["Available Stock"]) || 0;
-        let style = avail <= 0 ? 'text-danger fw-bold' : (avail <= 2 ? 'text-warning fw-bold' : '');
-        return `
-          <tr>
-            <td class="text-info fw-bold">${item["Item ID"] || ''}</td>
-            <td>${item["Item"] || ''}</td>
-            <td>${item["Part-No"] || ''}</td>
-            <td class="text-muted small">${item["Persamaan1"] || '-'} / ${item["Persamaan2"] || '-'}</td>
-            <td>${item["Satuan"] || ''}</td>
-            <td><span class="badge bg-secondary">${item["Kategori"] || 'General'}</span></td>
-            <td>${stock}</td>
-            <td class="${style}">${avail}</td>
-            <td>${formatRupiah(item["HARGA UPDATE"] || 0)}</td>
-          </tr>
-        `;
-      }).join('') || '<tr><td colspan="9" class="text-center text-muted">Database Kosong</td></tr>';
+  let openHTML = "";
+  let closeHTML = "";
 
-      if(datalist) {
-        datalist.innerHTML = dbBarangData.map(item => `<option value="${item["Item ID"]}"> ${item["Item"]} [PN: ${item["Part-No"] || '-'}]</option>`).join('');
-      }
-    }
-
-    function renderWOTables() {
-      const tbodyOpen = document.getElementById('mainTableBodyOpen');
-      const tbodyClose = document.getElementById('mainTableBodyClose');
-      let openHtml = "", closeHtml = "";
-
-      woData.forEach(wo => {
-        if(wo.status !== "RFU") {
-          openHtml += `
-            <tr>
-              <td class="fw-bold text-warning">${wo.nowo}</td><td>${wo.tanggal}</td>
-              <td class="fw-bold">${wo.unit}</td><td>${wo.type}</td><td>${wo.komponen}</td>
-              <td>${wo.deskripsi}</td><td>${wo.jamMulai}</td>
-              <td>
-                <button class="btn btn-sm btn-success p-1 px-2" onclick="openFormClose('${wo.nowo}')"><i class="fa fa-check"></i> Close</button>
-              </td>
-            </tr>
-          `;
-        } else {
-          let mats = wo.materialArr && wo.materialArr.length > 0 ? wo.materialArr : [{}];
-          mats.forEach((m, idx) => {
-            closeHtml += `
-              <tr>
-                ${idx === 0 ? `<td rowspan="${mats.length}" class="fw-bold text-success">${wo.nowo}</td><td rowspan="${mats.length}">${wo.unit}</td><td rowspan="${mats.length}">${wo.komponen}</td><td rowspan="${mats.length}">${wo.jamSelesai || ''}</td><td rowspan="${mats.length}">${wo.durasiMenit || ''}</td><td rowspan="${mats.length}" class="small">${wo.manpowerArr.join(', ')}</td>` : ''}
-                <td class="text-info">${m.itemId || '-'} / ${m.partno || '-'}</td><td>${m.material || '-'}</td><td>${m.qty || ''}</td><td>${m.statusMaterial || ''}</td>
-                ${idx === 0 ? `<td rowspan="${mats.length}"><span class="badge bg-success">${wo.status}</span></td><td rowspan="${mats.length}"><button class="btn btn-sm btn-danger p-1" onclick="deleteWO('${wo.nowo}')"><i class="fa fa-trash"></i></button></td>` : ''}
-              </tr>
-            `;
-          });
-        }
-      });
-      tbodyOpen.innerHTML = openHtml || '<tr><td colspan="8" class="text-center text-muted">Tidak ada unit breakdown. Aman!</td></tr>';
-      tbodyClose.innerHTML = closeHtml || '<tr><td colspan="12" class="text-center text-muted">Belum ada riwayat perbaikan.</td></tr>';
-    }
-
-    // --- INTERACTIVE EVENT LOGIC ---
-    document.getElementById('bmItemId').addEventListener('input', function(e) {
-      const match = dbBarangData.find(i => i["Item ID"] === e.target.value.trim());
-      if(match) {
-        document.getElementById('bmItem').value = match["Item"] || "";
-        document.getElementById('bmPartNo').value = match["Part-No"] || "";
-        document.getElementById('bmSatuan').value = match["Satuan"] || "pcs";
-        document.getElementById('bmKategori').value = match["Kategori"] || "";
-        document.getElementById('bmPrice').value = formatRupiah(match["HARGA UPDATE"] || 0);
-      }
-    });
-
-    document.getElementById('matItemId').addEventListener('input', function(e) {
-      const match = dbBarangData.find(i => i["Item ID"] === e.target.value.trim());
-      if(match) {
-        document.getElementById('matNama').value = match["Item"] || "";
-        document.getElementById('matPartNo').value = match["Part-No"] || "";
-        document.getElementById('matSatuan').value = match["Satuan"] || "pcs";
-        document.getElementById('matHarga').value = formatRupiah(match["HARGA UPDATE"] || 0);
-      }
-    });
-
-    document.getElementById('btnAddMaterial').addEventListener('click', () => {
-      let itemId = document.getElementById('matItemId').value.trim();
-      let qty = Number(document.getElementById('matQty').value) || 1;
-      
-      let matchedInv = dbBarangData.find(item => item["Item ID"] === itemId);
-      if(matchedInv && Number(matchedInv["Available Stock"]) < qty) {
-         alert(`[STOCK ALERT] Suku cadang kurang! Available stock tersisa: ${matchedInv["Available Stock"]} ${matchedInv["Satuan"]}`);
-      }
-
-      currentMaterials.push({
-        itemId: itemId,
-        material: document.getElementById('matNama').value.trim(),
-        partno: document.getElementById('matPartNo').value.trim(),
-        qty: qty,
-        satuan: document.getElementById('matSatuan').value.trim(),
-        harga: parseRupiah(document.getElementById('matHarga').value),
-        totalHarga: qty * parseRupiah(document.getElementById('matHarga').value),
-        statusMaterial: document.getElementById('matStatusMat').value
-      });
-      renderMaterialSubTable();
-      document.getElementById('matItemId').value = "";
-      document.getElementById('matNama').value = "";
-      document.getElementById('matPartNo').value = "";
-      document.getElementById('matHarga').value = "";
-    });
-
-    function renderMaterialSubTable() {
-      document.getElementById('materialListTableBody').innerHTML = currentMaterials.map((m, idx) => `
+  woData.forEach(wo => {
+    if(wo.status !== "RFU") {
+      openHTML += `
         <tr>
-          <td>${m.itemId}</td><td>${m.material}</td><td>${m.partno}</td><td>${m.qty}</td>
-          <td>${formatRupiah(m.harga)}</td><td>${m.statusMaterial}</td>
-          <td><button type="button" class="btn btn-sm btn-danger py-0 px-1" onclick="currentMaterials.splice(${idx},1);renderMaterialSubTable();"><i class="fa fa-times"></i></button></td>
-        </tr>
-      `).join('');
+          <td>${wo.nowo}</td>
+          <td>${wo.tanggal}</td>
+          <td>${wo.unit}</td>
+          <td>${wo.type}</td>
+          <td>${wo.komponen}</td>
+          <td>${wo.deskripsi}</td>
+          <td>${wo.jamMulai}</td>
+          <td>
+            <button class="btn btn-success btn-sm" onclick="openFormClose('${wo.nowo}')">Close</button>
+          </td>
+        </tr>`;
+    } else {
+      closeHTML += `
+        <tr>
+          <td>${wo.nowo}</td>
+          <td>${wo.unit}</td>
+          <td>${wo.komponen}</td>
+          <td>${wo.jamSelesai || '-'}</td>
+          <td>${wo.durasiMenit || '-'}</td>
+          <td>${(wo.manpowerArr || []).join(", ")}</td>
+          <td><span class="badge bg-success">RFU</span></td>
+        </tr>`;
     }
+  });
 
-    window.openFormClose = function(nowo) {
-      isEditMode = true;
-      let matched = woData.find(w => w.nowo === nowo);
-      if(!matched) return;
+  openT.innerHTML = openHTML || `<tr><td colspan="8" class="text-center">No Data</td></tr>`;
+  closeT.innerHTML = closeHTML || `<tr><td colspan="8" class="text-center">No History</td></tr>`;
+}
 
-      document.getElementById('modalWOTitle').innerText = "Form Penutupan Kasus WO: " + nowo;
-      document.getElementById('inNoWo').value = matched.nowo;
-      document.getElementById('inTanggal').value = matched.tanggal;
-      document.getElementById('inUnit').value = matched.unit;
-      document.getElementById('inType').value = matched.type;
-      document.getElementById('inKomponen').value = matched.komponen;
-      document.getElementById('inSubKomponen').value = matched.subkomponen;
-      document.getElementById('inDeskripsi').value = matched.deskripsi;
-      document.getElementById('inJamMulai').value = matched.jamMulai;
-      
-      document.getElementById('inStatusBD').value = "RFU";
-      document.getElementById('inStatusKerja').value = "Selesai";
-      document.getElementById('closeWOPanel').classList.remove('d-none');
-      
-      currentMaterials = [];
-      renderMaterialSubTable();
-      
-      let modalElement = new bootstrap.Modal(document.getElementById('modalFormWO'));
-      modalElement.show();
-    };
+/* =========================
+   UTIL
+========================= */
+function formatRupiah(num){
+  return "Rp " + Number(num || 0).toLocaleString("id-ID");
+}
+function parseRupiah(str){
+  return Number(String(str).replace(/[^0-9]/g,'')) || 0;
+}
 
-    // --- SEND OPERATIONS ENGINE ---
-    document.getElementById('mainWOForm').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      showLoading(true, "Menyimpan Berkas Transaksi WO...");
-      
-      let payload = {
-        nowo: document.getElementById('inNoWo').value.trim(),
-        tanggal: document.getElementById('inTanggal').value,
-        unit: document.getElementById('inUnit').value.trim(),
-        type: document.getElementById('inType').value.trim(),
-        komponen: document.getElementById('inKomponen').value.trim(),
-        subkomponen: document.getElementById('inSubKomponen').value.trim(),
-        deskripsi: document.getElementById('inDeskripsi').value.trim(),
-        jamMulai: document.getElementById('inJamMulai').value,
-        status: document.getElementById('inStatusBD').value,
-        jamSelesai: document.getElementById('inJamSelesai').value,
-        statusPekerjaan: document.getElementById('inStatusKerja').value,
-        descPekerjaan: document.getElementById('inDescKerja').value.trim(),
-        manpowerArr: document.getElementById('inManpower').value.split(',').map(s => s.trim()).filter(s => s !== ""),
-        materialArr: currentMaterials
-      };
-
-      let action = isEditMode ? "close" : "create";
-      let success = await sendToSpreadsheet(action, payload);
-      if(success) {
-        bootstrap.Modal.getInstance(document.getElementById('modalFormWO')).hide();
-        fetchSpreadsheetData();
-        fetchInventoryData();
-      } else { showLoading(false); }
+/* =========================
+   SEND API
+========================= */
+async function sendToSpreadsheet(action, data) {
+  try {
+    let res = await fetch(SCRIPT_WEB_URL, {
+      method: "POST",
+      body: JSON.stringify({action, data})
     });
 
-    document.getElementById('formBarangMasuk').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      showLoading(true, "Memproses Data Restock Vendor...");
-      let payload = {
-        date: document.getElementById('bmDate').value,
-        itemId: document.getElementById('bmItemId').value.trim(),
-        item: document.getElementById('bmItem').value.trim(),
-        partNo: document.getElementById('bmPartNo').value.trim(),
-        merk: document.getElementById('bmMerk').value.trim(),
-        vendor: document.getElementById('bmVendor').value.trim(),
-        qty: Number(document.getElementById('bmQty').value),
-        satuan: document.getElementById('bmSatuan').value.trim(),
-        kategori: document.getElementById('bmKategori').value.trim(),
-        price: parseRupiah(document.getElementById('bmPrice').value)
-      };
+    let json = await res.json();
+    return json.status === "success";
+  } catch(err) {
+    console.error(err);
+    return false;
+  }
+}
 
-      let success = await sendToSpreadsheet("restock_inventory", payload);
-      if(success) {
-        bootstrap.Modal.getInstance(document.getElementById('modalBarangMasuk')).hide();
-        document.getElementById('formBarangMasuk').reset();
-        fetchInventoryData();
-      }
-      showLoading(false);
-    });
+/* =========================
+   CLOSE WO
+========================= */
+window.openFormClose = function(nowo) {
+  isEditMode = true;
 
-    window.deleteWO = async function(nowo) {
-      if(!confirm(`Konfirmasi Hapus No WO: ${nowo}?`)) return;
-      showLoading(true, "Menghapus Berkas...");
-      let s = await sendToSpreadsheet("delete", { nowo: nowo });
-      if(s) fetchSpreadsheetData();
-      showLoading(false);
-    };
+  let wo = woData.find(w => w.nowo === nowo);
+  if(!wo) return;
 
-    async function sendToSpreadsheet(action, data) {
-      try {
-        let res = await fetch(SCRIPT_WEB_URL, {
-          method: "POST",
-          body: JSON.stringify({ action: action, data: data })
-        });
-        let resJson = await res.json();
-        return resJson.status === "success";
-      } catch(e) { console.error(e); return false; }
-    }
+  document.getElementById('inNoWo').value = wo.nowo;
+  document.getElementById('closeWOPanel').classList.remove('d-none');
 
-    // --- HELPER UTILITIES ---
-    document.getElementById("bmPrice").addEventListener("input", (e) => e.target.value = formatRupiah(parseRupiah(e.target.value)));
-    document.getElementById("matHarga").addEventListener("input", (e) => e.target.value = formatRupiah(parseRupiah(e.target.value)));
+  new bootstrap.Modal(document.getElementById('modalFormWO')).show();
+};
 
-    function formatRupiah(num) {
-      return "Rp " + Number(num).toLocaleString('id-ID');
-    }
-    function parseRupiah(str) {
-      return Number(String(str).replace(/[^0-9]/g, '')) || 0;
-      
-    }
-
-// Handler Submit Form Master Barang Baru
-document.getElementById('formMasterBarangBaru').addEventListener('submit', async function(e) {
+/* =========================
+   SUBMIT WO
+========================= */
+document.getElementById('mainWOForm').addEventListener('submit', async function(e){
   e.preventDefault();
-  showLoading(true, "Mendaftarkan Item Baru ke Master...");
-  
+
+  showLoading(true,"Saving WO...");
+
   let payload = {
-    itemId: document.getElementById('mItemId').value.trim(),
-    item: document.getElementById('mItem').value.trim(),
-    partNo: document.getElementById('mPartNo').value.trim(),
-    persamaan1: document.getElementById('mPersamaan1').value.trim(),
-    persamaan2: document.getElementById('mPersamaan2').value.trim(),
-    satuan: document.getElementById('mSatuan').value.trim(),
-    kategori: document.getElementById('mKategori').value.trim(),
-    harga: parseRupiah(document.getElementById('mHarga').value),
-    stock: Number(document.getElementById('mStock').value) || 0
+    nowo: inNoWo.value,
+    tanggal: inTanggal.value,
+    unit: inUnit.value,
+    type: inType.value,
+    komponen: inKomponen.value,
+    deskripsi: inDeskripsi.value,
+    jamMulai: inJamMulai.value,
+    status: inStatusBD.value,
+    materialArr: currentMaterials
   };
 
-  let success = await sendToSpreadsheet("add_new_item", payload);
-  if(success) {
-    bootstrap.Modal.getInstance(document.getElementById('modalMasterBarangBaru')).hide();
-    document.getElementById('formMasterBarangBaru').reset();
-    await fetchInventoryData(); // Refresh auto-suggest datalist
+  let action = isEditMode ? "close" : "create";
+
+  let ok = await sendToSpreadsheet(action, payload);
+
+  if(ok){
+    bootstrap.Modal.getInstance(document.getElementById('modalFormWO')).hide();
+    fetchSpreadsheetData();
+    fetchInventoryData();
   }
+
   showLoading(false);
 });
+    /* =========================
+   REAL-TIME ENGINE
+========================= */
 
-// Format Rupiah Live Input pada Form Master Baru
-document.getElementById("mHarga").addEventListener("input", (e) => e.target.value = formatRupiah(parseRupiah(e.target.value)));
-    
-  </script>
+let lastWOHash = "";
+let lastInventoryHash = "";
+
+// interval kontrol
+const REFRESH_INTERVAL = 5000; // 5 detik (aman untuk Google Script)
+
+function startRealTimeSync() {
+  setInterval(async () => {
+    await syncWORealTime();
+    await syncInventoryRealTime();
+  }, REFRESH_INTERVAL);
+}
+</script>
+
 </body>
 </html>
